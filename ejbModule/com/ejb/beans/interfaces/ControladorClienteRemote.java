@@ -14,7 +14,7 @@ import com.datatypes.DataLogin;
 @Remote
 public interface ControladorClienteRemote {
 
-	void AsociarMecanismoDePago(String ClienteCorreo, String MedioDePago);
+	String AsociarMecanismoDePago(String ClienteCorreo, String MedioDePago);
 	
 	String CancelarPedido(int InstanciaServicioId);
 

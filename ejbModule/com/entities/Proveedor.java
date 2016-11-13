@@ -36,6 +36,9 @@ public class Proveedor extends Usuario implements Serializable {
 	private double Longitud;
 	private float GananciaTotal;
 	private float PorCobrar;
+	private String VehiculoMarca;
+	private String VehiculoModelo;
+	private String StripeKey;
 
 	
 	public Proveedor() {
@@ -79,6 +82,8 @@ public class Proveedor extends Usuario implements Serializable {
 								this.isTrabajando(),
 								this.GananciaTotal,
 								this.PorCobrar,
+								this.VehiculoMarca,
+								this.VehiculoModelo,
 								ListaInstancias,
 								DataServicio
 							   );
@@ -96,16 +101,42 @@ public class Proveedor extends Usuario implements Serializable {
 								this.getUsuarioTelefono(),
 								this.isTrabajando(),
 								this.GananciaTotal,
-								this.PorCobrar
+								this.PorCobrar,
+								this.VehiculoMarca,
+								this.VehiculoModelo
 							   );
 	}
 	
+	
+	
+	public String getStripeKey() {
+		return StripeKey;
+	}
+
+	public void setStripeKey(String stripeKey) {
+		StripeKey = stripeKey;
+	}
+
 	public Servicio getServicio() {
 		return this.Servicio;
 	}
+	
+	public String getVehiculoMarca() {
+		return VehiculoMarca;
+	}
 
-	
-	
+	public void setVehiculoMarca(String vehiculoMarca) {
+		VehiculoMarca = vehiculoMarca;
+	}
+
+	public String getVehiculoModelo() {
+		return VehiculoModelo;
+	}
+
+	public void setVehiculoModelo(String vehiculoModelo) {
+		VehiculoModelo = vehiculoModelo;
+	}
+
 	public float getGananciaTotal() {
 		return GananciaTotal;
 	}

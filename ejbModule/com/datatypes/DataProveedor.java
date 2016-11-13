@@ -16,6 +16,8 @@ public class DataProveedor {
 	private boolean Trabajando;
 	private float GananciaTotal;
 	private float PorCobrar;
+	private String VehiculoMarca;
+	private String VehiculoModelo;
 	private List<DataInstanciaServicioBasico> InstanciasServicio;
 	private DataServicioBasico Servicio;
 
@@ -23,7 +25,7 @@ public class DataProveedor {
 	public DataProveedor() {
 	}
 	
-	public DataProveedor(String UsuarioCorreo, String UsuarioNombre, String UsuarioApellido, String UsuarioCiudad, String UsuarioContraseña, String UsuarioDireccion, float UsuarioPromedioPuntaje, String UsuarioTelefono, boolean Trabajando, float GananciaTotal, float PorCobrar, List<DataInstanciaServicioBasico> InstanciasServicio, DataServicioBasico Servicio) {
+	public DataProveedor(String UsuarioCorreo, String UsuarioNombre, String UsuarioApellido, String UsuarioCiudad, String UsuarioContraseña, String UsuarioDireccion, float UsuarioPromedioPuntaje, String UsuarioTelefono, boolean Trabajando, float GananciaTotal, float PorCobrar, String VehiculoMarca, String VehiculoModelo, List<DataInstanciaServicioBasico> InstanciasServicio, DataServicioBasico Servicio) {
 		this.UsuarioCorreo 			= UsuarioCorreo;
 		this.UsuarioNombre 			= UsuarioNombre;
 		this.UsuarioApellido		= UsuarioApellido;
@@ -37,8 +39,28 @@ public class DataProveedor {
 		this.Servicio				= Servicio;
 		this.GananciaTotal			= GananciaTotal;
 		this.PorCobrar				= PorCobrar;
+		this.VehiculoMarca			= VehiculoMarca;
+		this.VehiculoModelo			= VehiculoModelo;
 	}
 	
+	
+	
+	public String getVehiculoMarca() {
+		return VehiculoMarca;
+	}
+
+	public void setVehiculoMarca(String vehiculoMarca) {
+		VehiculoMarca = vehiculoMarca;
+	}
+
+	public String getVehiculoModelo() {
+		return VehiculoModelo;
+	}
+
+	public void setVehiculoModelo(String vehiculoModelo) {
+		VehiculoModelo = vehiculoModelo;
+	}
+
 	public float getGananciaTotal() {
 		return GananciaTotal;
 	}

@@ -62,20 +62,6 @@ public class ControladorRestProveedor {
 		return respuesta.build();		
 	}
 
-	/*@GET
-	@Path("/RegistrarProveedorTest")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response RegistrarProveedorTest(){
-		
-		DataProveedorBasico dpb = new DataProveedorBasico("prov1@gmail.com", "prov1", "prov1apellido", "monteviceo", "prov1", "lala123", 0, "0525626956", false);
-	
-		ResponseBuilder respuesta =Response.ok(dpb);
-
-		return respuesta.build();		
-	}*/
-	
-	
 	@POST
 	@Path("/Login")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -116,12 +102,14 @@ public class ControladorRestProveedor {
 	public Response IniciarJornada(@PathParam ("proveedorCorreo") String ProveedorCorreo, @PathParam ("servicioId") int ServicioId){
 		return ArmarResponse(controlador.IniciarJornada(ProveedorCorreo, ServicioId));
 	}
+	
 	@GET
 	@Path("/FinalizarJornada/{proveedorCorreo},{servicioId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response FinalizarJornada(@PathParam ("proveedorCorreo") String ProveedorCorreo, @PathParam ("servicioId") int ServicioId){
 		return ArmarResponse(controlador.FinalizarJornada(ProveedorCorreo, ServicioId));
 	}
+	
 	@GET
 	@Path("/MisReseñasObtenidas/{proveedorCorreo}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -177,10 +165,10 @@ public class ControladorRestProveedor {
 	}
 
 	@GET
-	@Path("/AsociarMecanismoDePago/{proveedorCorreo},{medioDePago}")
+	@Path("/AsociarMecanismoDePago/{proveedorCorreo},{medioDePago},{stripeKey}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public void AsociarMecanismoDePago(@PathParam ("proveedorCorreo") String ProveedorCorreo,@PathParam ("medioDePago") String MedioDePago){
-		controlador.AsociarMecanismoDePago(ProveedorCorreo, MedioDePago);
+	public Response AsociarMecanismoDePago(@PathParam ("proveedorCorreo") String ProveedorCorreo,@PathParam ("medioDePago") String Token, @PathParam ("stripeKey") String StripeKey){
+		return ArmarResponse(controlador.AsociarMecanismoDePago(ProveedorCorreo, Token, StripeKey));
 	}
 
 	@GET
@@ -218,7 +206,5 @@ public class ControladorRestProveedor {
 		//respuesta.header("Access-Control-Allow-Origin", "*");
 		return respuesta.build();
 	}
-	
-	
 	
 }

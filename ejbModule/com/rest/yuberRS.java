@@ -49,14 +49,22 @@ public class yuberRS {
 	@Produces("text/plain")
 	@Path("/doit")
 	public Response getMessage(){
-	 
-	 Stripe.apiKey ="sk_test_1cuTC5OBX6oCuibHLUTMg9TP";
-	 Map<String, Object> chargeParams = new HashMap<String, Object>();
+		
+		Stripe.apiKey ="sk_test_1cuTC5OBX6oCuibHLUTMg9TP";
+		Map<String, Object> chargeParams = new HashMap<String, Object>();
+		chargeParams.put("amount", 100000);
+		chargeParams.put("currency", "usd");
+		chargeParams.put("source", "tok_19FTHKJ84SoyOekuUsMvZWuo");
+		chargeParams.put("application_fee", 10000);
+		chargeParams.put("destination", "cus_9YbYdUpNjN5gSf");
+
+	
+	/* Map<String, Object> chargeParams = new HashMap<String, Object>();
      chargeParams.put("amount", 500000);
      chargeParams.put("currency", "usd");
      chargeParams.put("source", "tok_19FTHKJ84SoyOekuUsMvZWuo");
      chargeParams.put("description", "Test Plaid charge");
-
+*/
      try {
 		Charge charge = Charge.create(chargeParams);
 

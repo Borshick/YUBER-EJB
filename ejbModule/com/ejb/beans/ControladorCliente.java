@@ -55,8 +55,32 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
     }
 
     @Override
-	public void AsociarMecanismoDePago(String ClienteCorreo, String MedioDePago){		
-	//Este parece no estar bien definido, hay que ver bien como se maneja el asociar paypal
+	public String AsociarMecanismoDePago(String ClienteCorreo, String Token){	
+    	System.out.println("+++AsociarMecanismoDePago_Cliente+++");
+    	System.out.println("ClienteCorreo: " + ClienteCorreo);
+    	System.out.println("Token: " + Token);
+    	
+    	Cliente cliente;
+		try{
+			cliente = (Cliente)em.find(Cliente.class, ClienteCorreo);
+			if(cliente == null){
+				System.out.println(Error.C52);
+				System.out.println("---AsociarMecanismoDePago_Cliente---");
+				return Error.C52;
+			}
+		}catch(Exception e){
+			System.out.println(Error.C52 + e);
+			System.out.println("---AsociarMecanismoDePago_Cliente---");
+			return Error.C52;
+		}
+		em.flush();
+		
+		cliente.setTokenDePago(Token);
+		em.persist(cliente);
+		em.flush();
+		
+		System.out.println("---AsociarMecanismoDePago_Cliente---");
+		return Error.Ok;    	
 	}
 	
 	

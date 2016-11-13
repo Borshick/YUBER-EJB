@@ -121,8 +121,8 @@ public class ControladorRestCliente {
 		
 	}	
 
-	void AsociarMecanismoDePago(String ClienteCorreo, String MedioDePago){
-		controlador.AsociarMecanismoDePago(ClienteCorreo, MedioDePago);
+	public Response AsociarMecanismoDePago(String ClienteCorreo, String Token){
+		return ArmarResponse(controlador.AsociarMecanismoDePago(ClienteCorreo, Token));
 	}
 	
 	@POST

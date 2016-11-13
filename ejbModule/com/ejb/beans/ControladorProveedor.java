@@ -20,6 +20,7 @@ import com.stripe.exception.AuthenticationException;
 import com.stripe.exception.CardException;
 import com.stripe.exception.InvalidRequestException;
 import com.stripe.model.Account;
+import com.stripe.model.Charge;
 import com.utils.ControlErrores;
 
 import java.util.ArrayList;
@@ -222,7 +223,7 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		//Guardo el BD
 		em.persist(InstanciaServicio);
 		em.flush();
-		float porcentaje = 100;
+		float porcentaje = 10;
 		float GananciaViaje = Costo * porcentaje/100;
 		Proveedor prov = InstanciaServicio.getProveedor();
 		prov.setGananciaTotal(prov.getGananciaTotal()+GananciaViaje);
@@ -231,47 +232,37 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		em.flush();
 		
 		//Falta logica de paypal donde nos pagamos costo a nuestra cuenta
-		HacerPago(Costo);
+		HacerPago(Costo, InstanciaServicio.getCliente());
 		
 		ControlSistema sistema = new ControlSistema();			
 		JSONObject json = new JSONObject(InstanciaServicio.getDataInstanciaServicioBasico());					
 		sistema.EnviarPushNotification("Filanizo su viaje", "Costo: " + Costo ,json.toString(), InstanciaServicio.getCliente().getUsuarioSesionActiva().getSesionDeviceID());
-
-		
-		
 		return Error.Ok;
 	}
 		
-	private String HacerPago(float costo){
-		/*Stripe.apiKey ="sk_test_ZhHYZ82cPeu9kpus3cEOaDMe";
-		Map<String, Object> accountParams = new HashMap<String, Object>();
-		accountParams.put("country", "US");
-		accountParams.put("managed", true);
-
-		try {
-			Account.create(accountParams);
-		} catch (AuthenticationException e) {
-			// TODO Auto-generated catch block
+	private String HacerPago(float costo, Cliente cliente){
+		System.out.println("+++ HacerPago +++");
+		System.out.println("costo: " + costo);
+		System.out.println("cliente: " + cliente.getUsuarioNombre());
+		
+		Stripe.apiKey ="sk_test_1cuTC5OBX6oCuibHLUTMg9TP";
+		Map<String, Object> chargeParams = new HashMap<String, Object>();
+	    chargeParams.put("amount", costo*100);
+	    chargeParams.put("currency", "usd");
+	    chargeParams.put("source", cliente.getTokenDePago());
+	    chargeParams.put("description", "Test Plaid charge");
+	    
+	    try {
+			Charge charge = Charge.create(chargeParams);
+		} catch (AuthenticationException | InvalidRequestException | APIConnectionException | CardException
+				| APIException e) {
 			e.printStackTrace();
-		} catch (InvalidRequestException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (APIConnectionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (CardException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (APIException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println(e.getMessage());
+			System.out.println("--- HacerPago ---");
 		}
-		
-		
-		
-		return Error.Ok;*/
-		
-		return Error.Ok;
+	    
+	    System.out.println("--- HacerPago ---");
+	    return Error.Ok;
 	}
 	
 	public String IniciarJornada(String ProveedorCorreo, int ServicioId){		
@@ -565,7 +556,7 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 				return Error.I52;
 			}
 			em.flush();
-			DataUbicacion ubicacion = new DataUbicacion(latitud,longitud);
+			DataUbicacion ubicacion = new DataUbicacion(longitud,latitud);
 			ControlSistema sistema = new ControlSistema();			
 			JSONObject json = new JSONObject(ubicacion);	
 			
@@ -593,7 +584,20 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		}	
 		float monto = prov.getPorCobrar();
 		
-		//Falta logica de paypal
+		Stripe.apiKey = prov.getStripeKey();
+		Map<String, Object> chargeParams = new HashMap<String, Object>();
+	    chargeParams.put("amount", monto);
+	    chargeParams.put("currency", "usd");	    
+	    chargeParams.put("source", prov.getTokenDePago());
+	    chargeParams.put("description", "Test Plaid charge");
+	    
+	    try {
+			Charge charge = Charge.create(chargeParams);
+		} catch (AuthenticationException | InvalidRequestException | APIConnectionException | CardException
+				| APIException e) {
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}
 		
 		prov.setPorCobrar(0);		
 		return Error.Ok;
@@ -603,8 +607,21 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 	public void NotificarArribo(int InstanciaServicioId){		
 	}
 	
-	public void AsociarMecanismoDePago(String ProveedorCorreo, String MedioDePago){		
-		//Este parece no estar bien definido, hay que ver bien como se maneja el asociar paypal
+	public String AsociarMecanismoDePago(String ProveedorCorreo, String Token, String StripeKey){		
+		Proveedor prov;
+		try{
+			prov = (Proveedor)em.find(Proveedor.class, ProveedorCorreo);
+			em.flush();
+			if(prov == null){
+				return Error.P52;
+			}
+		}catch(Exception e){
+			return Error.P52;
+		}		
+		prov.setTokenDePago(Token);	
+		prov.setStripeKey(StripeKey);
+		em.persist(prov);
+		return Error.Ok;
 	}
 	
 	@Override

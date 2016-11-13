@@ -14,7 +14,7 @@ import com.datatypes.DataLogin;
 @Local
 public interface ControladorClienteLocal {
 
-	void AsociarMecanismoDePago(String ClienteCorreo, String MedioDePago);
+	String AsociarMecanismoDePago(String ClienteCorreo, String MedioDePago);
 	
 	String CancelarPedido(int InstanciaServicioId);
 

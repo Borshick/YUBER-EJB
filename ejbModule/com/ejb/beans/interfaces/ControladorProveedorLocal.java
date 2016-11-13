@@ -45,7 +45,7 @@ public interface ControladorProveedorLocal {
 	
 	boolean EstoyTrabajando( String ProveedorCorreo);
 
-	void AsociarMecanismoDePago( String ProveedorCorreo, String MedioDePago);
+	String AsociarMecanismoDePago( String ProveedorCorreo, String MedioDePago, String StripeKey);
 
 	void Cobrar( String ProveedorCorreo);
 	

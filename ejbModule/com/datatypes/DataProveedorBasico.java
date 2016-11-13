@@ -1,5 +1,6 @@
 package com.datatypes;
 
+import java.util.List;
 
 public class DataProveedorBasico {
 	
@@ -15,11 +16,13 @@ public class DataProveedorBasico {
 	private boolean Trabajando;
 	private float GananciaTotal;
 	private float PorCobrar;
+	private String VehiculoMarca;
+	private String VehiculoModelo;
 	
 	public DataProveedorBasico() {
 	}
-	
-	public DataProveedorBasico(String UsuarioCorreo, String UsuarioNombre, String UsuarioApellido, String UsuarioCiudad, String UsuarioContraseña, String UsuarioDireccion, float UsuarioPromedioPuntaje, String UsuarioTelefono, boolean Trabajando, float GananciaTotal, float PorCobrar) {
+	 
+	public DataProveedorBasico(String UsuarioCorreo, String UsuarioNombre, String UsuarioApellido, String UsuarioCiudad, String UsuarioContraseña, String UsuarioDireccion, float UsuarioPromedioPuntaje, String UsuarioTelefono, boolean Trabajando, float GananciaTotal, float PorCobrar, String VehiculoMarca, String VehiculoModelo) {
 		this.Estado					= "Ok";
 		this.UsuarioCorreo 			= UsuarioCorreo;
 		this.UsuarioNombre 			= UsuarioNombre;
@@ -32,8 +35,25 @@ public class DataProveedorBasico {
 		this.Trabajando				= Trabajando;
 		this.GananciaTotal			= GananciaTotal;
 		this.PorCobrar				= PorCobrar;
+		this.VehiculoMarca			= VehiculoMarca;
+		this.VehiculoModelo			= VehiculoModelo;
 	}
 	
+	public String getVehiculoMarca() {
+		return VehiculoMarca;
+	}
+
+	public void setVehiculoMarca(String vehiculoMarca) {
+		VehiculoMarca = vehiculoMarca;
+	}
+
+	public String getVehiculoModelo() {
+		return VehiculoModelo;
+	}
+
+	public void setVehiculoModelo(String vehiculoModelo) {
+		VehiculoModelo = vehiculoModelo;
+	}
 	
 	public float getGananciaTotal() {
 		return GananciaTotal;

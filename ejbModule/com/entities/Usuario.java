@@ -19,6 +19,7 @@ public class Usuario implements Serializable {
 	private String UsuarioDireccion;	
 	private float UsuarioPromedioPuntaje;
 	private String UsuarioTelefono;
+	private String TokenDePago;
 	@OneToOne(cascade=CascadeType.PERSIST)
 	private Sesion UsuarioSesionActiva;
 	
@@ -53,9 +54,17 @@ public class Usuario implements Serializable {
 	String getUsuarioCorreo() {
 		return this.UsuarioCorreo;
 	}
-
+	
 	public void setUsuarioCorreo(String UsuarioCorreo) {
 		this.UsuarioCorreo = UsuarioCorreo;
+	}	
+	
+	public String getTokenDePago() {
+		return TokenDePago;
+	}
+
+	public void setTokenDePago(String tokenDePago) {
+		TokenDePago = tokenDePago;
 	}
 
 	public String getUsuarioApellido() {
