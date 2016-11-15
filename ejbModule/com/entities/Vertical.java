@@ -5,6 +5,7 @@ import javax.persistence.*;
 
 import com.datatypes.DataAdministradorBasico;
 import com.datatypes.DataServicioBasico;
+import com.datatypes.DataUsuarioBasico;
 import com.datatypes.DataVertical;
 import com.datatypes.DataVerticalBasico;
 
@@ -24,17 +25,20 @@ public class Vertical implements Serializable {
 	private List<Servicio> Servicios;
 	@ManyToMany(cascade=CascadeType.PERSIST)
 	private List<Administrador> Administradores;
+	@OneToMany(mappedBy="Vertical", cascade=CascadeType.PERSIST)
+	private List<Usuario> Usuarios;
 
 	public Vertical() {
 	}
 	
 	public Vertical(String verticalTipo, String verticalNombre, List<Servicio> servicios,
-			List<Administrador> administradores) {
+			List<Administrador> administradores, List<Usuario> usuarios) {
 		super();
 		VerticalTipo = verticalTipo;
 		VerticalNombre = verticalNombre;
 		Servicios = servicios;
 		Administradores = administradores;
+		Usuarios = usuarios;
 	}
 	
 	public DataVertical getDataVertical(){		
@@ -49,12 +53,19 @@ public class Vertical implements Serializable {
 		{
 			DataAdministradorBasico DataAdministrador = Administrador.getDataAdministradorBasico();
 			ListaAdministradores.add(DataAdministrador);
-		}		
+		}	
+		List<DataUsuarioBasico> ListaUsuarios = new ArrayList<DataUsuarioBasico>();
+		for(Usuario Usuario : this.Usuarios)
+		{
+			DataUsuarioBasico DataUsuario = Usuario.getDataUsuarioBasico();
+			ListaUsuarios.add(DataUsuario);
+		}	
 		return new DataVertical(
 								this.VerticalTipo, 
 								this.VerticalNombre, 
 								ListaServicios, 
-								ListaAdministradores
+								ListaAdministradores,
+								ListaUsuarios								
 							   );
 	}
 	

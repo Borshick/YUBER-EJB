@@ -13,6 +13,7 @@ import com.entities.InstanciaServicio;
 import com.entities.Proveedor;
 import com.entities.Reseña;
 import com.entities.Servicio;
+import com.entities.Vertical;
 import com.stripe.Stripe;
 import com.stripe.exception.APIConnectionException;
 import com.stripe.exception.APIException;
@@ -20,7 +21,9 @@ import com.stripe.exception.AuthenticationException;
 import com.stripe.exception.CardException;
 import com.stripe.exception.InvalidRequestException;
 import com.stripe.model.Account;
+import com.stripe.model.Card;
 import com.stripe.model.Charge;
+import com.stripe.model.Customer;
 import com.utils.ControlErrores;
 
 import java.util.ArrayList;
@@ -179,10 +182,55 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		return Error.Ok;
 	}
 	
-	
+	@Override
+	public String CancelarViaje(int InstanciaServicioId){	
+		System.out.println("+++ CacelarViaje_Proveedor +++");
+		System.out.println("InstanciaServicioId: " + InstanciaServicioId);
+		//Busco la InstanciaServicio
+		InstanciaServicio is;
+		try{
+			is = (InstanciaServicio)em.find(InstanciaServicio.class, InstanciaServicioId);
+			if(is == null){
+				System.out.println(Error.I52);
+				System.out.println("--- CacelarViaje_Proveedor ---");
+				return Error.I52;
+			}
+		}catch(Exception e){
+			System.out.println(Error.I52 + e.getMessage());
+			System.out.println("--- CacelarViaje_Proveedor ---");
+			return Error.I52;
+		}
+		em.flush();
+		//Elimino la instancia en proveedor
+		if (is.getProveedor() != null){
+			System.out.println("Eliminando instancia en proveedor");
+			Proveedor Proveedor = is.getProveedor();
+			Proveedor.removeInstanciaServicio(is);		
+
+			System.out.println("Eliminando instancia en cliente");
+			Cliente cliente = is.getCliente();
+			cliente.removeInstanciaServicio(is);
+			
+			ControlSistema sistema = new ControlSistema();			
+			JSONObject json = new JSONObject(Proveedor.getDataProveedorBasico());
+			
+			System.out.println("Envio push -Servicio cacelado- a cliente");
+			sistema.EnviarPushNotification("Servicio cancelado", "Proveedor: " + Proveedor.getUsuarioNombre() ,json.toString(), cliente.getUsuarioSesionActiva().getSesionDeviceID());
+
+		}
+		//elimino la InstanciaServicio
+		em.remove(is);
+		System.out.println("--- CacelarViaje_Proveedor ---");
+		return Error.Ok;
+	}
 	
 	@Override
 	public String FinServicio(int InstanciaServicioId, float Distancia){
+		System.out.println("+++ FinServicio +++");
+		System.out.println("InstanciaServicioId: " + InstanciaServicioId);
+		System.out.println("Distancia: " + Distancia);
+		//Paso distancia a kilometros
+		Distancia = Distancia/1000;
 		InstanciaServicio InstanciaServicio;
 		try{
 			InstanciaServicio = (InstanciaServicio)em.find(InstanciaServicio.class, InstanciaServicioId);
@@ -203,7 +251,9 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		float Tiempo = ( fechaFin.getTime() - fechaInicio.getTime() )/1000; 
 		float Costo = 0;
 		float TarifaBase = InstanciaServicio.getServicio().getServicioTarifaBase();
+		System.out.println("TarifaBase: " + TarifaBase);
 		String TipoDeVertical = InstanciaServicio.getServicio().getVertical().getVerticalTipo();
+		System.out.println("TipoDeVertical: " + TipoDeVertical);
 		//Calculo la tarifa
 		if (TipoDeVertical.equals("Transporte")){
 			//La tarifa, estará determinada como: tarifa_base + distancia_recorrida * precio_por_km
@@ -215,6 +265,7 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 			float PrecioPorSegundo = PrecioPorHora/60/60;			
 			Costo = TarifaBase + (Tiempo*PrecioPorSegundo);
 		}					
+		System.out.println("Costo: " + Costo);
 		//Seteo y guardo
 		InstanciaServicio.setInstanciaServicioCosto(Costo);
 		InstanciaServicio.setInstanciaServicioDistancia(Distancia);
@@ -224,7 +275,7 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		em.persist(InstanciaServicio);
 		em.flush();
 		float porcentaje = 10;
-		float GananciaViaje = Costo * porcentaje/100;
+		float GananciaViaje = Costo - (Costo * porcentaje/100);
 		Proveedor prov = InstanciaServicio.getProveedor();
 		prov.setGananciaTotal(prov.getGananciaTotal()+GananciaViaje);
 		prov.setPorCobrar(prov.getPorCobrar()+GananciaViaje);
@@ -232,37 +283,42 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		em.flush();
 		
 		//Falta logica de paypal donde nos pagamos costo a nuestra cuenta
-		HacerPago(Costo, InstanciaServicio.getCliente());
+		//if(prov.getStripeKey() != null && prov.getTokenDePago()!= null)
+			HacerPago(Costo, InstanciaServicio);
 		
 		ControlSistema sistema = new ControlSistema();			
 		JSONObject json = new JSONObject(InstanciaServicio.getDataInstanciaServicioBasico());					
 		sistema.EnviarPushNotification("Filanizo su viaje", "Costo: " + Costo ,json.toString(), InstanciaServicio.getCliente().getUsuarioSesionActiva().getSesionDeviceID());
+		System.out.println("--- FinServicio ---");
 		return Error.Ok;
 	}
 		
-	private String HacerPago(float costo, Cliente cliente){
+	private String HacerPago(float costo, InstanciaServicio is){
+		try {
 		System.out.println("+++ HacerPago +++");
+		Cliente cliente = is.getCliente();
 		System.out.println("costo: " + costo);
 		System.out.println("cliente: " + cliente.getUsuarioNombre());
 		
 		Stripe.apiKey ="sk_test_1cuTC5OBX6oCuibHLUTMg9TP";
+	
 		Map<String, Object> chargeParams = new HashMap<String, Object>();
-	    chargeParams.put("amount", costo*100);
-	    chargeParams.put("currency", "usd");
-	    chargeParams.put("source", cliente.getTokenDePago());
-	    chargeParams.put("description", "Test Plaid charge");
-	    
-	    try {
-			Charge charge = Charge.create(chargeParams);
-		} catch (AuthenticationException | InvalidRequestException | APIConnectionException | CardException
-				| APIException e) {
-			e.printStackTrace();
-			System.out.println(e.getMessage());
-			System.out.println("--- HacerPago ---");
-		}
+		int aDebitar = (int)costo*100;
+	    chargeParams.put("amount", aDebitar);
+	    chargeParams.put("currency", "usd");    
+	    chargeParams.put("customer", cliente.getTokenDePago());
+	    chargeParams.put("description", "Pago de yuber del dia: "+ is.getInstanciaServicioFechaFin());    
+	   
+		Charge charge = Charge.create(chargeParams);
+		
 	    
 	    System.out.println("--- HacerPago ---");
 	    return Error.Ok;
+		} catch (Exception e){
+			System.out.println(e.getMessage());
+			System.out.println("--- HacerPago ---");
+			return e.getMessage();
+		}
 	}
 	
 	public String IniciarJornada(String ProveedorCorreo, int ServicioId){		
@@ -302,15 +358,21 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 	
 	@Override
 	public String IniciarServicio(int InstanciaServicioId){
+		System.out.println("+++ Iniciar Servicio +++");
+		System.out.println("InstanciaServicioId: " + InstanciaServicioId);
 		java.util.Date fecha = new Date();
 		//Busco la InstanciaServicio 
 		InstanciaServicio is;
 		try{
 			is = (InstanciaServicio)em.find(InstanciaServicio.class, InstanciaServicioId);
 			if(is == null){
+				System.out.println(Error.I52);
+				System.out.println("--- Iniciar Servicio ---");
 				return Error.I52;
 			}
 		}catch(Exception e){
+			System.out.println(Error.I52 + e.getMessage());
+			System.out.println("--- Iniciar Servicio ---");
 			return Error.I52;
 		}
 		em.flush();
@@ -321,7 +383,8 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		ControlSistema sistema = new ControlSistema();
 		JSONObject json = new JSONObject(is.getDataInstanciaServicioBasico());	
 		sistema.EnviarPushNotification("Empieza el viaje", "Viaje comenzado" ,json.toString(), is.getCliente().getUsuarioSesionActiva().getSesionDeviceID());
-			
+		
+		System.out.println("--- Iniciar Servicio ---");
 		return Error.Ok;
 	}
 	
@@ -334,6 +397,8 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		
 	
 	public List<DataReseña> MisReseñasObtenidas(String ProveedorCorreo){	
+		System.out.println("+++ MisReseñasObtenidas_Proveedor +++");
+		System.out.println("ProveedorCorreo: "+ ProveedorCorreo);
 		Proveedor prov;
 		try{
 			prov = (Proveedor)em.find(Proveedor.class, ProveedorCorreo);
@@ -347,22 +412,34 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		List<DataReseña> ListaReseña = new ArrayList<DataReseña>();
 		List<InstanciaServicio> ListaInstanciaServicio = prov.getInstanciasServicio();
 		for(InstanciaServicio is : ListaInstanciaServicio){
-			if(is.getReseñaCliente() != null){
-				ListaReseña.add(is.getReseñaCliente().getDataReseña());
+			if(is.getReseñaProveedor() != null){
+				ListaReseña.add(is.getReseñaProveedor().getDataReseña());
+				System.out.println("DataInstanciaServicio: ");
+				if(is.getInstanciaServicioFechaInicio() != null)
+					System.out.println("FechaInicio: " + is.getInstanciaServicioFechaInicio().toString());
+				if(is.getInstanciaServicioFechaFin() != null)
+					System.out.println("FechaFin: " + is.getInstanciaServicioFechaFin().toString());
 			}
 		}
+		System.out.println("--- MisReseñasObtenidas_Proveedor ---");
 		return ListaReseña;
 	}
 	
 	
 	public List<DataInstanciaServicio> ObtenerHistorial(String ProveedorCorreo){		
+		System.out.println("+++ ObtenerHistorial_Proveedor +++");
+		System.out.println("ProveedorCorreo: "+ ProveedorCorreo);
 		List<DataInstanciaServicio> ListaDataInstanciaServicio = new ArrayList<DataInstanciaServicio>();		
 		Query query = em.createNamedQuery("ObtenerHistorialProveedor", InstanciaServicio.class).setParameter("ProveedorCorreo", ProveedorCorreo);
 		List<InstanciaServicio> ListaInstanciaServicio = query.getResultList();
 		for (InstanciaServicio InstanciaServicio : ListaInstanciaServicio){ 
 			DataInstanciaServicio DataInstanciaServicio = InstanciaServicio.getDataInstanciaServicio();
 			ListaDataInstanciaServicio.add(DataInstanciaServicio);
+			System.out.println("DataInstanciaServicio: ");
+			System.out.println("FechaInicio: " + DataInstanciaServicio.getInstanciaServicioFechaInicio().toString());
+			System.out.println("FechaFin: " + DataInstanciaServicio.getInstanciaServicioFechaFin().toString());
 		}
+		System.out.println("--- ObtenerHistorial_Proveedor ---");
 		return ListaDataInstanciaServicio;
 	}
 	
@@ -461,9 +538,9 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 	
 	private String RecalcularPromedio(InstanciaServicio ActualIs, float puntajeNuevo)	{
 		try{			
-			System.out.println("+++Recalcular promedio+++ ");
+			System.out.println("+++RecalcularPromedio_Proveedor+++ ");
 			Proveedor Proveedor = ActualIs.getProveedor();
-			System.out.println("Recalculando promedio del puntje del cliente "+ Proveedor.getUsuarioNombre());
+			System.out.println("Recalculando promedio del puntje del proveedor "+ Proveedor.getUsuarioNombre());
 			List<InstanciaServicio> ListaInstancias = Proveedor.getInstanciasServicio();
 			if(ListaInstancias == null)
 				System.out.println("ListaInstanciasVacia");			
@@ -471,26 +548,31 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 			int cantidad = 1;
 			System.out.println("Lista: ");			
 			for(InstanciaServicio is : ListaInstancias){
-				System.out.println("is.getInstanciaServicioId(): "+is.getInstanciaServicioId());
-				Reseña reseña =is.getReseñaProveedor();
-				if(reseña != null)
+				if(is.getInstanciaServicioId() != ActualIs.getInstanciaServicioId())
 				{
-					System.out.println("reseña.getReseñaId(): " +reseña.getReseñaId());
-					float puntaje = (float)reseña.getReseñaPuntaje();
-					System.out.println("puntaje: "+ puntaje);
-					suma += puntaje;
-					cantidad++;
-				}						
+					System.out.println("is.getInstanciaServicioId(): "+is.getInstanciaServicioId());
+					Reseña reseña =is.getReseñaProveedor();
+					if(reseña != null)
+					{
+						System.out.println("reseña.getReseñaId(): " +reseña.getReseñaId());
+						float puntaje = (float)reseña.getReseñaPuntaje();
+						System.out.println("puntaje: "+ puntaje);
+						suma += puntaje;
+						cantidad++;
+					}	
+				}
 			}						
+			System.out.println("suma: "+ suma);
+			System.out.println("cantidad: "+ cantidad);			
 			float promedio = suma/cantidad;
 			System.out.println("promedio: "+ promedio);
 			Proveedor.setUsuarioPromedioPuntaje(promedio);
 			em.persist(Proveedor);	
-			System.out.println("/---Recalcular promedio---/");
+			System.out.println("---RecalcularPromedio_Proveedor---");
 			System.out.println(Error.Ok);
 			return Error.Ok;
 		}catch(Exception e){
-			System.out.println("/---Recalcular promedio---/");
+			System.out.println("---RecalcularPromedio_Proveedor---");
 			System.out.println(Error.P53);
 			return Error.P53;
 		}
@@ -503,10 +585,28 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		return Error.Ok;
 	}
 	
-	public String RegistrarProveedor(DataProveedorBasico Proveedor){
+	public String RegistrarProveedor(DataProveedorBasico Proveedor, String TipoVertical){
+		System.out.println("+++ Registrar Proveedor +++");
+		System.out.println("Proveedor: " + Proveedor.getUsuarioCorreo());
+		System.out.println("Vertical: " + TipoVertical);
+		
 		Proveedor existente = em.find(Proveedor.class, Proveedor.getUsuarioCorreo());
 		if(existente != null)
+		{
+			System.out.println(Error.C51 + ": " +Proveedor.getUsuarioCorreo());
+			System.out.println("--- Registrar Proveedor ---");
 			return Error.C51 + ": " +Proveedor.getUsuarioCorreo();
+		}
+		Vertical vertical;
+		try{
+			vertical = em.find(Vertical.class, TipoVertical);
+		}catch(Exception e){
+			return Error.ErrorCompuesto(Error.S1 ,TipoVertical);
+		}
+		if(vertical == null){
+			return Error.ErrorCompuesto(Error.S1 ,TipoVertical);
+		}	
+		
 		Proveedor user = new Proveedor();
 		user.setUsuarioNombre(Proveedor.getUsuarioNombre());
 		user.setUsuarioApellido(Proveedor.getUsuarioApellido());
@@ -518,8 +618,12 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		user.setUsuarioTelefono(Proveedor.getUsuarioTelefono());
 		user.setGananciaTotal(0);
 		user.setPorCobrar(0);
+		user.setVehiculoMarca(Proveedor.getVehiculoMarca());
+		user.setVehiculoModelo(Proveedor.getVehiculoModelo());
+		user.setVertical(vertical);
 		em.persist(user);
 		em.flush();
+		System.out.println("--- Registrar Proveedor ---");
 		return Error.Ok;
 	}
 	
@@ -571,7 +675,9 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 	}
 		
 	
-	public String RetirarFondos(String ProveedorCorreo){		
+	public String RetirarFondos(String ProveedorCorreo){	
+		System.out.println("+++ Retirar fondos +++");
+		System.out.println("ProveedorCorreo: "+ ProveedorCorreo);
 		Proveedor prov;
 		try{
 			prov = (Proveedor)em.find(Proveedor.class, ProveedorCorreo);
@@ -586,20 +692,25 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		
 		Stripe.apiKey = prov.getStripeKey();
 		Map<String, Object> chargeParams = new HashMap<String, Object>();
-	    chargeParams.put("amount", monto);
+		int aDebitar = (int)monto*100;
+	    chargeParams.put("amount", aDebitar);
 	    chargeParams.put("currency", "usd");	    
-	    chargeParams.put("source", prov.getTokenDePago());
+	    chargeParams.put("customer", prov.getTokenDePago());
 	    chargeParams.put("description", "Test Plaid charge");
 	    
 	    try {
-			Charge charge = Charge.create(chargeParams);
+			Charge charge = Charge.create(chargeParams);			
 		} catch (AuthenticationException | InvalidRequestException | APIConnectionException | CardException
 				| APIException e) {
 			e.printStackTrace();
-			System.out.println(e.getMessage());
+			System.out.println("Errror pagando: " + e.getMessage());
+			System.out.println("--- Retirar fondos ---");
 		}
+	    System.out.println("Se han pagado: " + monto);
 		
-		prov.setPorCobrar(0);		
+		prov.setPorCobrar(0);	
+		
+		System.out.println("--- Retirar fondos ---");
 		return Error.Ok;
 	}
 	
@@ -607,7 +718,8 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 	public void NotificarArribo(int InstanciaServicioId){		
 	}
 	
-	public String AsociarMecanismoDePago(String ProveedorCorreo, String Token, String StripeKey){		
+	public String AsociarMecanismoDePago(String ProveedorCorreo, String Token, String StripeKey){	
+		
 		Proveedor prov;
 		try{
 			prov = (Proveedor)em.find(Proveedor.class, ProveedorCorreo);
@@ -618,10 +730,24 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		}catch(Exception e){
 			return Error.P52;
 		}		
-		prov.setTokenDePago(Token);	
+		try{
+		
+		Stripe.apiKey = StripeKey;
+		Map<String, Object> customerParams = new HashMap<String, Object>();
+		customerParams.put("source", Token);
+		customerParams.put("description", ProveedorCorreo);
+
+		Customer customer;	
+		customer = Customer.create(customerParams);	
+		
+		prov.setTokenDePago(customer.getId());	
 		prov.setStripeKey(StripeKey);
+		
 		em.persist(prov);
 		return Error.Ok;
+		}catch(Exception e){
+			return e.getMessage();
+		}	
 	}
 	
 	@Override

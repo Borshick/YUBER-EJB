@@ -38,7 +38,7 @@ public class DataProveedorBasico {
 		this.VehiculoMarca			= VehiculoMarca;
 		this.VehiculoModelo			= VehiculoModelo;
 	}
-	
+
 	public String getVehiculoMarca() {
 		return VehiculoMarca;
 	}

@@ -34,7 +34,7 @@ public interface ControladorClienteRemote {
 
 	String PuntuarCliente(int Puntaje, String Comentario, int InstanciaServicioId);
 
-	String RegistrarCliente(DataClienteBasico Cliente);
+	String RegistrarCliente(DataClienteBasico Cliente, String TipoVertical);
 	
 	String AgregarDestino(int instaniaServicioId, double latitud, double longitud);
 

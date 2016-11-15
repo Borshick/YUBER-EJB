@@ -19,16 +19,16 @@ public class DataInstanciaServicioBasico {
 	
 	
 	public DataInstanciaServicioBasico(int InstanciaServicioId, float InstanciaServicioCosto, float InstanciaServicioDistancia, Date InstanciaServicioFechaInicio, Date InstanciaServicioFechaFin, float InstanciaServicioTiempo, DataUbicacion Ubicacion, DataUbicacion UbicacionDestino) {
-		this.InstanciaServicioId 		= InstanciaServicioId;
-		this.InstanciaServicioCosto 	= InstanciaServicioCosto;
-		this.InstanciaServicioDistancia	= InstanciaServicioDistancia;
+		this.InstanciaServicioId 			= InstanciaServicioId;
+		this.InstanciaServicioCosto 		= InstanciaServicioCosto;
+		this.InstanciaServicioDistancia		= InstanciaServicioDistancia;
 		this.InstanciaServicioFechaInicio	= InstanciaServicioFechaInicio;
 		this.InstanciaServicioFechaFin		= InstanciaServicioFechaFin;
-		this.InstanciaServicioTiempo	= InstanciaServicioTiempo;
-		this.Ubicacion	= Ubicacion;
+		this.InstanciaServicioTiempo		= InstanciaServicioTiempo;
+		this.Ubicacion						= Ubicacion;
 		this.UbicacionDestino				= UbicacionDestino;
 	}
-	
+
 	public DataUbicacion getUbicacionDestino() {
 		return UbicacionDestino;
 	}

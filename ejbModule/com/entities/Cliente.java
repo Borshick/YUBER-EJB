@@ -3,6 +3,7 @@ package com.entities;
 import com.datatypes.DataCliente;
 import com.datatypes.DataClienteBasico;
 import com.datatypes.DataInstanciaServicioBasico;
+import com.datatypes.DataVerticalBasico;
 import com.entities.Usuario;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,8 +14,8 @@ import javax.persistence.*;
 @Entity
 @Inheritance(strategy=InheritanceType.SINGLE_TABLE)
 @NamedQueries({
-	@NamedQuery(query = "SELECT DISTINCT c FROM Cliente c JOIN c.InstanciasServicio i WHERE i.Servicio.Vertical.VerticalTipo = :VerticalTipo ORDER BY c.UsuarioPromedioPuntaje DESC", name = "TopClientesPorPuntaje"),
-	@NamedQuery(query = "SELECT DISTINCT c FROM Cliente c JOIN c.InstanciasServicio i WHERE i.Servicio.Vertical.VerticalTipo = :VerticalTipo ORDER BY COUNT(i.InstanciaServicioId) DESC", name = "TopClientesPorCantServicios"),
+	@NamedQuery(query = "SELECT DISTINCT c FROM Cliente c WHERE c.Vertical = :VerticalTipo ORDER BY c.UsuarioPromedioPuntaje DESC", name = "TopClientesPorPuntaje"),
+	@NamedQuery(query = "SELECT DISTINCT c FROM Cliente c JOIN c.InstanciasServicio i WHERE c.Vertical = :VerticalTipo ORDER BY COUNT(i.InstanciaServicioId) DESC", name = "TopClientesPorCantServicios"),
 	
 	//@NamedQuery(query = "SELECT c FROM Cliente c INNER JOIN InstanciaServicio i ON (c.UsuarioCorreo = i.Cliente.UsuarioCorreo) WHERE i.InstanciaServicioFechaFin >= :Fecha", name = "ObtenerClientesActivos")
 })
@@ -34,6 +35,11 @@ public class Cliente extends Usuario implements Serializable {
 			DataInstanciaServicioBasico DataInstanciaServicio = Instancia.getDataInstanciaServicioBasico();
 			ListaInstancias.add(DataInstanciaServicio);
 		}		
+		DataVerticalBasico DataVertical;
+		if (this.getVertical() == null)
+			DataVertical = null;
+		else
+			DataVertical = this.getVertical().getDataVerticalBasico();
 		return new DataCliente(	this.getUsuarioCorreo(), 
 								this.getUsuarioNombre(), 
 								this.getUsuarioApellido(), 
@@ -42,7 +48,8 @@ public class Cliente extends Usuario implements Serializable {
 								this.getUsuarioDireccion(), 
 								this.getUsuarioPromedioPuntaje(), 
 								this.getUsuarioTelefono(), 
-								ListaInstancias
+								ListaInstancias,
+								DataVertical
 							   );
 	}
     

@@ -10,7 +10,7 @@ import com.datatypes.DataServicioBasico;
 @Remote
 public interface ControladorServicioRemote {
 
-	List<DataServicio> ObtenerServicios(String TipoDeVertical);
+	List<DataServicioBasico> ObtenerServicios(String TipoDeVertical);
 
 	String CrearServicio(DataServicioBasico Servicio, String TipoVertical);
 

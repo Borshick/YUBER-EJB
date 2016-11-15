@@ -15,6 +15,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import com.datatypes.DataClienteBasico;
+import com.datatypes.DataCrearCliente;
 import com.datatypes.DataInstanciaServicio;
 import com.datatypes.DataLogin;
 import com.datatypes.DataPedirServicio;
@@ -47,11 +48,10 @@ public class ControladorRestCliente {
 	@Path("/RegistrarCliente")
 	@Consumes(MediaType.APPLICATION_JSON)
 	//@Produces(MediaType.APPLICATION_JSON)
-	public Response RegistrarCliente(DataClienteBasico Cliente){
-		System.out.println("Registrando cliente..." + Cliente.getUsuarioCorreo());
-		
-		String resultado = controlador.RegistrarCliente(Cliente);
-		return ArmarResponse(resultado);
+	public Response RegistrarCliente(DataCrearCliente Cliente){
+		System.out.println("Registrando cliente..." + Cliente.getCliente().getUsuarioCorreo());		 
+		String resultado = controlador.RegistrarCliente(Cliente.getCliente(), Cliente.getTipoVertical());
+		return ArmarResponse(resultado);  
 	}
 	
 	/*@POST
@@ -120,8 +120,11 @@ public class ControladorRestCliente {
 		return ArmarResponse(controlador.OlvidePass(ClienteCorreo));
 		
 	}	
-
-	public Response AsociarMecanismoDePago(String ClienteCorreo, String Token){
+	
+	@GET
+	@Path("/AsociarMecanismoDePago/{clienteCorreo},{token}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response AsociarMecanismoDePago(@PathParam ("clienteCorreo") String ClienteCorreo, @PathParam ("token") String Token){
 		return ArmarResponse(controlador.AsociarMecanismoDePago(ClienteCorreo, Token));
 	}
 	

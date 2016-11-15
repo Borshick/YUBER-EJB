@@ -9,19 +9,31 @@ public class DataVertical {
 	private String VerticalNombre;
 	private List<DataServicioBasico> Servicios;
 	private List<DataAdministradorBasico> Administradores;
+	private List<DataUsuarioBasico> Usuarios;
 	
 	public DataVertical() {
 	}
 	
 	public DataVertical(String verticalTipo, String verticalNombre, List<DataServicioBasico> servicios,
-		List<DataAdministradorBasico> administradores) {
+		List<DataAdministradorBasico> administradores, List<DataUsuarioBasico> usuarios) {
 		super();
-		VerticalTipo = verticalTipo;
-		VerticalNombre = verticalNombre;
-		Servicios = servicios;
+		VerticalTipo 	= verticalTipo;
+		VerticalNombre 	= verticalNombre;
+		Servicios 		= servicios;
 		Administradores = administradores;
+		Usuarios		= usuarios;
 	}
 	
+	
+	
+	public List<DataUsuarioBasico> getUsuarios() {
+		return Usuarios;
+	}
+
+	public void setUsuarios(List<DataUsuarioBasico> usuarios) {
+		Usuarios = usuarios;
+	}
+
 	public String getVerticalTipo() {
 		return VerticalTipo;
 	}

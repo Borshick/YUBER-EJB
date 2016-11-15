@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import com.datatypes.DataCrearProveedor;
 import com.datatypes.DataLogin;
 import com.datatypes.DataProveedor;
 import com.datatypes.DataProveedorBasico;
@@ -57,8 +58,8 @@ public class ControladorRestProveedor {
 	@POST
 	@Path("/RegistrarProveedor")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response RegistrarProveedor(DataProveedorBasico Proveedor){
-		ResponseBuilder respuesta =Response.ok(controlador.RegistrarProveedor(Proveedor));
+	public Response RegistrarProveedor(DataCrearProveedor Proveedor){
+		ResponseBuilder respuesta =Response.ok(controlador.RegistrarProveedor(Proveedor.getProveedor(), Proveedor.getTipoVertical()));
 		return respuesta.build();		
 	}
 
@@ -175,7 +176,7 @@ public class ControladorRestProveedor {
 	@Path("/Cobrar/{proveedorCorreo}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public void Cobrar(@PathParam ("proveedorCorreo") String ProveedorCorreo){
-		controlador.Cobrar(ProveedorCorreo);
+		controlador.RetirarFondos(ProveedorCorreo);
 	}
 		
 	@GET
@@ -183,7 +184,7 @@ public class ControladorRestProveedor {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response ObtenerProveedores(){
 		ResponseBuilder respuesta = Response.ok(controlador.ObtenerProveedores());
-		return respuesta.build();	
+		return respuesta.build();
 	}
 	
 	@GET
@@ -207,4 +208,10 @@ public class ControladorRestProveedor {
 		return respuesta.build();
 	}
 	
+	@GET
+	@Path("/CancelarServicio/{instanciaServicioId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response CancelarPedido(@PathParam ("instanciaServicioId") int InstanciaServicioId){
+		return ArmarResponse(controlador.CancelarViaje(InstanciaServicioId));
+	}
 }

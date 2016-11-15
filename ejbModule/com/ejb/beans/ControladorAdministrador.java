@@ -262,7 +262,7 @@ public class ControladorAdministrador implements ControladorAdministradorRemote,
 	@Override
 	public String CrearVertical(String verticalTipo, String verticalNombre){
 		try{
-			Vertical NuevaVertical = new Vertical(verticalTipo, verticalNombre, null, null);	
+			Vertical NuevaVertical = new Vertical(verticalTipo, verticalNombre, null, null, null);	
 			em.persist(NuevaVertical);
 			em.flush();
 			return Error.Ok;

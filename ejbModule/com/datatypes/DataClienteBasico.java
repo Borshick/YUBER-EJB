@@ -16,15 +16,15 @@ public class DataClienteBasico {
 	public DataClienteBasico() {
 	}
 	
-	public DataClienteBasico(String UsuarioCorreo, String UsuarioNombre, String UsuarioApellido, String UsuarioCiudad, String UsuarioContraseña, String UsuarioDireccion, float UsuarioPromedioPuntaje, String UsuarioTelefono) {
-		this.UsuarioCorreo 			= UsuarioCorreo;
-		this.UsuarioNombre 			= UsuarioNombre;
-		this.UsuarioApellido		= UsuarioApellido;
-		this.UsuarioCiudad			= UsuarioCiudad;
-		this.UsuarioContraseña		= UsuarioContraseña;
-		this.UsuarioDireccion		= UsuarioDireccion;
-		this.UsuarioTelefono		= UsuarioTelefono;
-		this.UsuarioPromedioPuntaje	= UsuarioPromedioPuntaje;
+	public DataClienteBasico(String usuarioCorreo, String usuarioNombre, String usuarioApellido, String usuarioCiudad, String usuarioContraseña, String usuarioDireccion, float usuarioPromedioPuntaje, String usuarioTelefono) {
+		this.UsuarioCorreo 			= usuarioCorreo;
+		this.UsuarioNombre 			= usuarioNombre;
+		this.UsuarioApellido		= usuarioApellido;
+		this.UsuarioCiudad			= usuarioCiudad;
+		this.UsuarioContraseña		= usuarioContraseña;
+		this.UsuarioDireccion		= usuarioDireccion;
+		this.UsuarioTelefono		= usuarioTelefono;
+		this.UsuarioPromedioPuntaje	= usuarioPromedioPuntaje;
 	}
 	
 	public String getUsuarioCorreo() {

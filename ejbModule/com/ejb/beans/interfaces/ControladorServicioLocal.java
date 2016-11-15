@@ -10,7 +10,7 @@ import com.datatypes.DataServicioBasico;
 @Local
 public interface ControladorServicioLocal {
 
-	List<DataServicio> ObtenerServicios(String TipoDeVertical);
+	List<DataServicioBasico> ObtenerServicios(String TipoDeVertical);
 
 	String CrearServicio(DataServicioBasico Servicio, String TipoVertical);
 

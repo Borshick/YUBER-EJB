@@ -24,6 +24,7 @@ public class ControlErrores {
 	public String P51 = ToJson("ERROR" ,"El proveedor debe estar trabajando");
 	public String P52 = ToJson("ERROR" ,"El proveedor no existe en el sistema");
 	public String P53 = ToJson("ERROR" ,"Error calculando el puntaje del proveedor");
+	public String P54 = ToJson("ERROR" ,"No hay proveedores cercanos");
 		
 	//I0-I100 : Errores de Instancias de servicio
 	public String I50 = ToJson("ERROR" ,"La instancia de servicio ya fue asignada a otro proveedor");

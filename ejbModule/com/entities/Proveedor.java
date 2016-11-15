@@ -4,6 +4,7 @@ import com.datatypes.DataInstanciaServicioBasico;
 import com.datatypes.DataProveedor;
 import com.datatypes.DataProveedorBasico;
 import com.datatypes.DataServicioBasico;
+import com.datatypes.DataVerticalBasico;
 import com.entities.Usuario;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -14,11 +15,11 @@ import javax.persistence.*;
 @Entity
 @Inheritance(strategy=InheritanceType.SINGLE_TABLE)  
 @NamedQueries({
-	@NamedQuery(query = "SELECT p FROM Proveedor p JOIN p.Servicio s JOIN s.Vertical v WHERE v.VerticalTipo = :Vertical ORDER BY p.UsuarioPromedioPuntaje DESC", name = "TopProveedoresPorPuntajes"),
+	@NamedQuery(query = "SELECT p FROM Proveedor p WHERE p.Vertical = :Vertical ORDER BY p.UsuarioPromedioPuntaje DESC", name = "TopProveedoresPorPuntajes"),
 	//@NamedQuery(query = "SELECT p , SUM(i.InstanciaServicioCosto) "
 	//		+ "FROM Proveedor p JOIN p.InstanciasServicio i "
 	//		+ "ORDER BY SUM(i.InstanciaServicioCosto) DESC", name = "TopProveedoresPorGanancia"),
-	@NamedQuery(query = "SELECT p FROM Proveedor p JOIN p.Servicio s JOIN s.Vertical v WHERE v.VerticalTipo = :Vertical ORDER BY p.GananciaTotal DESC", name = "TopProveedoresPorGanancia"),	
+	@NamedQuery(query = "SELECT p FROM Proveedor p WHERE p.Vertical = :Vertical ORDER BY p.GananciaTotal DESC", name = "TopProveedoresPorGanancia"),	
 	@NamedQuery(query = "SELECT p FROM Proveedor p", name = "ObtenerListaProveedoresEnCiudad"),//Falta el where segun ciudad
 	
 	
@@ -31,11 +32,11 @@ public class Proveedor extends Usuario implements Serializable {
 	private Servicio Servicio;
 	@OneToMany(mappedBy="Proveedor", cascade=CascadeType.PERSIST)
 	private List<InstanciaServicio> InstanciasServicio;
-	private boolean Trabajando;
-	private double Latitud;
-	private double Longitud;
-	private float GananciaTotal;
-	private float PorCobrar;
+	private boolean Trabajando = false;
+	private double Latitud = 0;
+	private double Longitud = 0;
+	private float GananciaTotal = 0;
+	private float PorCobrar = 0;
 	private String VehiculoMarca;
 	private String VehiculoModelo;
 	private String StripeKey;
@@ -70,6 +71,13 @@ public class Proveedor extends Usuario implements Serializable {
 			DataServicio = null;
 		else
 			DataServicio = this.Servicio.getDataServicioBasico();
+		
+		DataVerticalBasico DataVertical;
+		if (this.getVertical() == null)
+			DataVertical = null;
+		else
+			DataVertical = this.getVertical().getDataVerticalBasico();
+		
 		return new DataProveedor(
 								this.getUsuarioCorreo(), 
 								this.getUsuarioNombre(), 
@@ -85,7 +93,8 @@ public class Proveedor extends Usuario implements Serializable {
 								this.VehiculoMarca,
 								this.VehiculoModelo,
 								ListaInstancias,
-								DataServicio
+								DataServicio,
+								DataVertical
 							   );
 	}
 	

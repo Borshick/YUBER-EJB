@@ -22,6 +22,8 @@ public class Usuario implements Serializable {
 	private String TokenDePago;
 	@OneToOne(cascade=CascadeType.PERSIST)
 	private Sesion UsuarioSesionActiva;
+	@ManyToOne(cascade=CascadeType.PERSIST)
+	private Vertical Vertical;
 	
 
 	public Usuario() {
@@ -35,7 +37,8 @@ public class Usuario implements Serializable {
 								this.UsuarioContraseña, 
 								this.UsuarioDireccion, 
 								this.UsuarioPromedioPuntaje, 
-								this.UsuarioTelefono								
+								this.UsuarioTelefono,
+								this.Vertical.getDataVerticalBasico()
 							   );
 	}
 
@@ -49,8 +52,16 @@ public class Usuario implements Serializable {
 								this.UsuarioPromedioPuntaje, 
 								this.UsuarioTelefono
 							   );
-	}
+	}	
 	
+	public Vertical getVertical() {
+		return Vertical;
+	}
+
+	public void setVertical(Vertical vertical) {
+		Vertical = vertical;
+	}
+
 	String getUsuarioCorreo() {
 		return this.UsuarioCorreo;
 	}

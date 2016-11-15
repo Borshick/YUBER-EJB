@@ -15,11 +15,12 @@ public class DataCliente {
 	private float UsuarioPromedioPuntaje;
 	private String UsuarioTelefono;
 	private List<DataInstanciaServicioBasico> InstanciasServicio;
+	private DataVerticalBasico Vertical;
 	
 	public DataCliente() {
 	}
 	
-	public DataCliente(String UsuarioCorreo, String UsuarioNombre, String UsuarioApellido, String UsuarioCiudad, String UsuarioContraseña, String UsuarioDireccion, float UsuarioPromedioPuntaje, String UsuarioTelefono, List<DataInstanciaServicioBasico> InstanciasServicio) {
+	public DataCliente(String UsuarioCorreo, String UsuarioNombre, String UsuarioApellido, String UsuarioCiudad, String UsuarioContraseña, String UsuarioDireccion, float UsuarioPromedioPuntaje, String UsuarioTelefono, List<DataInstanciaServicioBasico> InstanciasServicio, DataVerticalBasico Vertical) {
 		this.Estado					= "OK";
 		this.UsuarioCorreo 			= UsuarioCorreo;
 		this.UsuarioNombre 			= UsuarioNombre;
@@ -30,8 +31,17 @@ public class DataCliente {
 		this.UsuarioTelefono		= UsuarioTelefono;
 		this.UsuarioPromedioPuntaje	= UsuarioPromedioPuntaje;
 		this.InstanciasServicio		= InstanciasServicio;	
+		this.Vertical				= Vertical;
 	}
 	
+	public DataVerticalBasico getVertical() {
+		return Vertical;
+	}
+
+	public void setVertical(DataVerticalBasico vertical) {
+		Vertical = vertical;
+	}
+
 	public String getUsuarioCorreo() {
 		return UsuarioCorreo;
 	}

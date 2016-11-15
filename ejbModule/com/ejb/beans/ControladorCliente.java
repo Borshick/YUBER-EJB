@@ -14,10 +14,15 @@ import com.entities.InstanciaServicio;
 import com.entities.Proveedor;
 import com.entities.Reseña;
 import com.entities.Servicio;
+import com.entities.Vertical;
+import com.stripe.Stripe;
+import com.stripe.model.Customer;
 import com.utils.ControlErrores;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
@@ -75,45 +80,69 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
 		}
 		em.flush();
 		
-		cliente.setTokenDePago(Token);
-		em.persist(cliente);
-		em.flush();
-		
-		System.out.println("---AsociarMecanismoDePago_Cliente---");
-		return Error.Ok;    	
+		try{
+			Stripe.apiKey ="sk_test_1cuTC5OBX6oCuibHLUTMg9TP";
+			
+			Map<String, Object> customerParams = new HashMap<String, Object>();
+			customerParams.put("source", Token);
+			customerParams.put("description", ClienteCorreo);
+
+			Customer customer;	
+			customer = Customer.create(customerParams);	
+			
+			cliente.setTokenDePago(customer.getId());			
+			em.persist(cliente);
+			em.flush();
+			
+			System.out.println("---AsociarMecanismoDePago_Cliente---");
+			return Error.Ok;    	
+		}catch(Exception e){
+			System.out.println(e.getMessage());
+			System.out.println("---AsociarMecanismoDePago_Cliente---");
+			return Error.C52;
+		}
 	}
 	
 	
 	@Override
 	public String CancelarPedido(int InstanciaServicioId){	
-			//Busco la InstanciaServicio
-			InstanciaServicio is;
-			try{
-				is = (InstanciaServicio)em.find(InstanciaServicio.class, InstanciaServicioId);
-				if(is == null){
-					return Error.I52;
-				}
-			}catch(Exception e){
+		System.out.println("+++ CacelarPedido +++");
+		System.out.println("InstanciaServicioId: " + InstanciaServicioId);
+		//Busco la InstanciaServicio
+		InstanciaServicio is;
+		try{
+			is = (InstanciaServicio)em.find(InstanciaServicio.class, InstanciaServicioId);
+			if(is == null){
+				System.out.println(Error.I52);
+				System.out.println("--- CacelarPedido ---");
 				return Error.I52;
 			}
-			em.flush();
-			//Elimino la instancia en proveedor
-			if (is.getProveedor() != null){
-				Proveedor Proveedor = is.getProveedor();
-				List<InstanciaServicio> lista = Proveedor.getInstanciasServicio();
-				lista.remove(is);
-				Proveedor.setInstanciasServicio(lista);	
-				
-				Cliente Cliente = is.getCliente();				
-				ControlSistema sistema = new ControlSistema();			
-				JSONObject json = new JSONObject(Cliente.getDataClienteBasico());
-				
-				sistema.EnviarPushNotification("Solicitud cancelada", "Cliente: " + Cliente.getUsuarioNombre() ,json.toString(), Proveedor.getUsuarioSesionActiva().getSesionDeviceID());
+		}catch(Exception e){
+			System.out.println(Error.I52 + e.getMessage());
+			System.out.println("--- CacelarPedido ---");
+			return Error.I52;
+		}
+		em.flush();
+		//Elimino la instancia en proveedor
+		if (is.getProveedor() != null){
+			System.out.println("Eliminando instancia en proveedor");
+			Proveedor Proveedor = is.getProveedor();
+			Proveedor.removeInstanciaServicio(is);	
+			System.out.println("Eliminando instancia en cliente");
+			Cliente Cliente = is.getCliente();
+			Cliente.removeInstanciaServicio(is);
+			
+			ControlSistema sistema = new ControlSistema();			
+			JSONObject json = new JSONObject(Cliente.getDataClienteBasico());
+			
+			System.out.println("Envio push -Solicitud cacelada- a proveedor");
+			sistema.EnviarPushNotification("Solicitud cancelada", "Cliente: " + Cliente.getUsuarioNombre() ,json.toString(), Proveedor.getUsuarioSesionActiva().getSesionDeviceID());
 
-			}
-			//elimino la InstanciaServicio
-			em.remove(is);
-			return Error.Ok;
+		}
+		//elimino la InstanciaServicio
+		em.remove(is);
+		System.out.println("--- CacelarPedido ---");
+		return Error.Ok;
 	}
 		
 	
@@ -125,6 +154,7 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
 	
 	@Override
 	public List<DataReseña> MisReseñasObtenidas(String ClienteCorreo){
+		System.out.println("+++ MisReseñasObtenidas_Cliente +++");
 		Cliente cliente;
 		try{
 			cliente = (Cliente)em.find(Cliente.class, ClienteCorreo);
@@ -138,10 +168,11 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
 		List<DataReseña> ListaReseña = new ArrayList<DataReseña>();
 		List<InstanciaServicio> ListaInstanciaServicio = cliente.getInstanciasServicio();
 		for(InstanciaServicio is : ListaInstanciaServicio){
-			if(is.getReseñaProveedor() != null){
-				ListaReseña.add(is.getReseñaProveedor().getDataReseña());
+			if(is.getReseñaCliente() != null){
+				ListaReseña.add(is.getReseñaCliente().getDataReseña());
 			}
 		}
+		System.out.println("--- MisReseñasObtenidas_Cliente ---");
 		return ListaReseña;
 	}
 	
@@ -163,8 +194,8 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
 		List<DataReseña> ListaReseña = new ArrayList<DataReseña>();
 		List<InstanciaServicio> ListaInstanciaServicio = cliente.getInstanciasServicio();
 		for(InstanciaServicio is : ListaInstanciaServicio){
-			if(is.getServicio().getServicioId() == ServicioId && is.getReseñaProveedor() != null){
-				ListaReseña.add(is.getReseñaProveedor().getDataReseña());
+			if(is.getServicio().getServicioId() == ServicioId && is.getReseñaCliente() != null){
+				ListaReseña.add(is.getReseñaCliente().getDataReseña());
 			}
 		}
 		System.out.println("Cantidad: " + ListaReseña.size());
@@ -187,6 +218,9 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
 	
 	@Override
 	public List<DataInstanciaServicio> ObtenerHistorial(String ClienteCorreo, int ServicioId){		
+		System.out.println("+++ ObtenerHistorial_Cliente +++");
+		System.out.println("ClienteCorreo: "+ ClienteCorreo);
+		
 		List<DataInstanciaServicio> ListaDataInstanciaServicio = new ArrayList<DataInstanciaServicio>();		
 		Query query = em.createNamedQuery("ObtenerHistorialCliente", InstanciaServicio.class).
 				setParameter("ClienteCorreo", ClienteCorreo).setParameter("ServicioId", ServicioId);
@@ -195,6 +229,7 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
 			DataInstanciaServicio DataInstanciaServicio = InstanciaServicio.getDataInstanciaServicio();
 			ListaDataInstanciaServicio.add(DataInstanciaServicio);
 		}
+		System.out.println("--- ObtenerHistorial_Cliente ---");
 		return ListaDataInstanciaServicio;
 	}
 	
@@ -234,64 +269,93 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
 	
 	@Override
 	public String PedirServicio(String ClienteCorreo, int ServicioId, DataUbicacion DataUbicacion){
+		System.out.println("+++ PedirServicio +++");
+		System.out.println("ClienteCorreo: " + ClienteCorreo);
+		System.out.println("ServicioId: " + ServicioId);
+		System.out.println("DataUbicacionLatitud: " + DataUbicacion.getLatitud());
+		System.out.println("DataUbicacionLongitud: " + DataUbicacion.getLongitud());
+		
 		//Busco el servicio
 		Servicio Servicio = (Servicio)em.find(Servicio.class, ServicioId);
 		em.flush();
 		//Busco al cliente que lo solicito
 		Cliente Cliente = (Cliente)em.find(Cliente.class, ClienteCorreo);
 		em.flush();
-		//Creo la instancia servicio y le asocio dicho servicio
-		InstanciaServicio is = new InstanciaServicio();
-		is.setInstanciaServicioCosto(0);
-		is.setInstanciaServicioDistancia(0);
-		is.setInstanciaServicioFechaInicio(null);
-		is.setInstanciaServicioFechaFin(null);
-		is.setInstanciaServicioTiempo(0);
-		is.setReseñaCliente(null);
-		is.setReseñaProveedor(null);
-		is.setProveedor(null);
-		is.setCliente(Cliente);
-		is.setServicio(Servicio);
-		is.setLatitud(DataUbicacion.getLatitud());
-		is.setLongitud(DataUbicacion.getLongitud());
-		//Guardo el BD
-		Cliente.addInstanciaServicio(is);
-		em.persist(is);
-		em.flush();
 		List<Proveedor> Proveedores = CalcularProveedoresCercanos(DataUbicacion, ServicioId);
-
-		DataNotificacionNuevaSolicitud DataNotificacion = new DataNotificacionNuevaSolicitud(is.getInstanciaServicioId(), DataUbicacion, Cliente.getDataClienteBasico());
-		ControlSistema sistema = new ControlSistema();			
-		JSONObject json = new JSONObject(DataNotificacion);	
-		
-		//System.out.println(DataNotificacion.toString());
-		
-		for(Proveedor prov : Proveedores)
+		if(Proveedores.size() > 0)
 		{
-			if(prov.isTrabajando())
-				sistema.EnviarPushNotification("Nueva solicitud", "Cliente: " + Cliente.getUsuarioNombre() ,json.toString(), prov.getUsuarioSesionActiva().getSesionDeviceID());
+			//Creo la instancia servicio y le asocio dicho servicio
+			InstanciaServicio is = new InstanciaServicio();
+			is.setInstanciaServicioCosto(0);
+			is.setInstanciaServicioDistancia(0);
+			is.setInstanciaServicioFechaInicio(null);
+			is.setInstanciaServicioFechaFin(null);
+			is.setInstanciaServicioTiempo(0);
+			is.setReseñaCliente(null);
+			is.setReseñaProveedor(null);
+			is.setProveedor(null);
+			is.setCliente(Cliente);
+			is.setServicio(Servicio);
+			is.setLatitud(DataUbicacion.getLatitud());
+			is.setLongitud(DataUbicacion.getLongitud());
+			//Guardo el BD
+			Cliente.addInstanciaServicio(is);
+			em.persist(is);
+			em.flush();
+			
+	
+			DataNotificacionNuevaSolicitud DataNotificacion = new DataNotificacionNuevaSolicitud(is.getInstanciaServicioId(), DataUbicacion, Cliente.getDataClienteBasico());
+			ControlSistema sistema = new ControlSistema();			
+			JSONObject json = new JSONObject(DataNotificacion);	
+			
+			//System.out.println(DataNotificacion.toString());
+			
+			for(Proveedor prov : Proveedores)
+			{
+				if(prov.isTrabajando())
+					sistema.EnviarPushNotification("Nueva solicitud", "Cliente: " + Cliente.getUsuarioNombre() ,json.toString(), prov.getUsuarioSesionActiva().getSesionDeviceID());
+			}
+			
+			JSONObject idResult = new JSONObject();
+			try{		
+				idResult.put("id", is.getInstanciaServicioId());
+
+				System.out.println("idResult.toString():" + idResult.toString());
+				System.out.println("--- PedirServicio ---");
+				return idResult.toString();
+			}catch(Exception e){
+				System.out.println("Error: " + e.getMessage());
+				System.out.println("--- PedirServicio ---");
+				return "Error";	
+			}	
 		}
-		
-		JSONObject idResult = new JSONObject();
-		try{		
-		idResult.put("id", is.getInstanciaServicioId());
-		return idResult.toString();
-		
-		}catch(Exception e){
-			return "Error";	}	
+		else
+		{
+			System.out.println(Error.P54);
+			System.out.println("--- PedirServicio ---");
+			return Error.P54;	
+		}
 	}
 	
 	
 	public String PuntuarCliente(int Puntaje, String Comentario, int InstanciaServicioId){	
+		System.out.println("+++ PuntuarCliente +++");
+		System.out.println("Puntaje: " + Puntaje);
+		System.out.println("Comentario: " + Comentario);
+		System.out.println("InstanciaServicioId: " + InstanciaServicioId);
 		//Busco la InstanciaServicio 		
 		InstanciaServicio InstanciaServicio;
 		try{
 			InstanciaServicio = (InstanciaServicio)em.find(InstanciaServicio.class, InstanciaServicioId);
 			if(InstanciaServicio == null)
 			{
+				System.out.println(Error.I52);
+				System.out.println("--- PuntuarCliente ---");
 				return Error.I52;
 			}
 		}catch(Exception e){
+			System.out.println(Error.I52 + e.getMessage());
+			System.out.println("--- PuntuarCliente ---");
 			return Error.I52;
 		}
 		em.flush();
@@ -304,12 +368,19 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
 		//Guardo el BD
 		em.persist(Reseña);	
 		em.flush();
-		return RecalcularPromedio(InstanciaServicio, Puntaje);
+		String resultado = RecalcularPromedio(InstanciaServicio, Puntaje);
+		System.out.println("resultado: " + resultado);
+		System.out.println("--- PuntuarCliente ---");
+		return resultado;
 	}
 	
 	
 	private String RecalcularPromedio(InstanciaServicio ActualIs, float puntajeNuevo){
 		try{
+			System.out.println("+++RecalcularPromedio_Cliente+++ ");
+			System.out.println("ActualIs: " + ActualIs.getInstanciaServicioId());
+			System.out.println("puntajeNuevo: " + puntajeNuevo);
+			
 			Cliente Cliente = ActualIs.getCliente();
 			System.out.println("Recalculando promedio del puntje del cliente "+ Cliente.getUsuarioNombre());
 			List<InstanciaServicio> ListaInstancias = Cliente.getInstanciasServicio();
@@ -341,19 +412,36 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
 			Cliente.setUsuarioPromedioPuntaje(promedio);
 			em.persist(Cliente);
 			em.flush();
+
+			System.out.println("--- RecalcularPromedio_Cliente ---");
 			return Error.Ok;
 		}catch(Exception e){
+			System.out.println("--- RecalcularPromedio_Cliente ---");
+			System.out.println(Error.C53);
 			return Error.ErrorCompuesto(Error.C53, e.getMessage());
 		}
 	}
 	
 	
 	@Override
-	public String RegistrarCliente(DataClienteBasico Cliente){	
+	public String RegistrarCliente(DataClienteBasico Cliente, String TipoVertical){	
 		try{
+			System.out.println("+++ RegistrarCliente +++");
+			System.out.println("Cliente : " + Cliente.getUsuarioCorreo());
+			System.out.println("TipoVertical : " + TipoVertical);
+			
 			Cliente existente = em.find(Cliente.class, Cliente.getUsuarioCorreo());
 			if(existente != null)
 				return Error.C51 +": " +Cliente.getUsuarioCorreo();
+			Vertical vertical;
+			try{
+				vertical = em.find(Vertical.class, TipoVertical);
+			}catch(Exception e){
+				return Error.ErrorCompuesto(Error.S1 ,TipoVertical);
+			}
+			if(vertical == null){
+				return Error.ErrorCompuesto(Error.S1 ,TipoVertical);
+			}	
 			Cliente user = new Cliente();
 			user.setUsuarioNombre(Cliente.getUsuarioNombre());
 			user.setUsuarioApellido(Cliente.getUsuarioApellido());
@@ -363,8 +451,9 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
 			user.setUsuarioDireccion(Cliente.getUsuarioDireccion());		
 			user.setUsuarioPromedioPuntaje(0);
 			user.setUsuarioTelefono(Cliente.getUsuarioTelefono());
+			user.setVertical(vertical);
 			em.persist(user);
-			
+			System.out.println("--- RegistrarCliente ---");
 			return Error.Ok;
 		}catch(Exception e){
 			return Error.C54 + e.getMessage();
@@ -420,17 +509,22 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
 		System.out.println("Lista de proveedores cercanos: ");		
 		for(Proveedor p : ListaProveedor)
 		{
-			if(p.getServicio().getServicioId() == ServicioId)
+			if(p.getServicio() != null)
 			{
-				double cateto1 = p.getLatitud() - ubicacion.getLatitud();
-				double cateto2 = p.getLongitud() - ubicacion.getLongitud();
-				double distancia = Math.sqrt(cateto1*cateto1 + cateto2*cateto2);
-				if(distancia < dist)
-				{					
-					ListaFinal.add(p);
-					System.out.println("Proveedor solicitado: " + p.getUsuarioNombre());
-				}				
+				if(p.getServicio().getServicioId() == ServicioId && p.isTrabajando())
+				{
+					double cateto1 = p.getLatitud() - ubicacion.getLatitud();
+					double cateto2 = p.getLongitud() - ubicacion.getLongitud();
+					double distancia = Math.sqrt(cateto1*cateto1 + cateto2*cateto2);
+					if(distancia < dist)
+					{					
+						ListaFinal.add(p);
+						System.out.println("Proveedor solicitado: " + p.getUsuarioNombre());
+					}				
+				}
 			}
+			else
+				System.out.println("El proveedor " + p.getUsuarioNombre() + " no tiene servicio asociado");
 		}		
 		System.out.println("---Calcular proveedores cercanos---");		
 		return ListaFinal;

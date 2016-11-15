@@ -33,8 +33,10 @@ public class ControladorServicio implements ControladorServicioRemote, Controlad
 	}
 	
 	@Override
-	public List<DataServicio> ObtenerServicios(String TipoDeVertical){ 
-		List<DataServicio> ListaDataServicios = new ArrayList<DataServicio>();		
+	public List<DataServicioBasico> ObtenerServicios(String TipoDeVertical){ 
+		System.out.println("+++ Obtener Servicios +++");
+		System.out.println("TipoDeVertical: " + TipoDeVertical);
+		List<DataServicioBasico> ListaDataServicios = new ArrayList<DataServicioBasico>();		
 		//Verifico que exista la vertical
 		Vertical vertical; 
 		try{
@@ -46,11 +48,17 @@ public class ControladorServicio implements ControladorServicioRemote, Controlad
 			return ListaDataServicios;
 		}
 		//Existe, traigo las que esta activas
-		List<Servicio> ListaServicios= vertical.getServicios();		
+		List<Servicio> ListaServicios= vertical.getServicios();
+		System.out.println("Lista: ");
 		for(Servicio Servicio : ListaServicios){
 			if(Servicio.getBorrado() == 0)
-				ListaDataServicios.add(Servicio.getDataServicio());
+			{
+				System.out.println(Servicio.getServicioNombre());
+				ListaDataServicios.add(Servicio.getDataServicioBasico());
+			}
+			
 		}		
+		System.out.println("--- Obtener Servicios ---");
 		return ListaDataServicios;
 	}
 	

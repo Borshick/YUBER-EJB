@@ -20,12 +20,13 @@ public class DataProveedor {
 	private String VehiculoModelo;
 	private List<DataInstanciaServicioBasico> InstanciasServicio;
 	private DataServicioBasico Servicio;
+	private DataVerticalBasico Vertical;
 
 	
 	public DataProveedor() {
 	}
 	
-	public DataProveedor(String UsuarioCorreo, String UsuarioNombre, String UsuarioApellido, String UsuarioCiudad, String UsuarioContraseña, String UsuarioDireccion, float UsuarioPromedioPuntaje, String UsuarioTelefono, boolean Trabajando, float GananciaTotal, float PorCobrar, String VehiculoMarca, String VehiculoModelo, List<DataInstanciaServicioBasico> InstanciasServicio, DataServicioBasico Servicio) {
+	public DataProveedor(String UsuarioCorreo, String UsuarioNombre, String UsuarioApellido, String UsuarioCiudad, String UsuarioContraseña, String UsuarioDireccion, float UsuarioPromedioPuntaje, String UsuarioTelefono, boolean Trabajando, float GananciaTotal, float PorCobrar, String VehiculoMarca, String VehiculoModelo, List<DataInstanciaServicioBasico> InstanciasServicio, DataServicioBasico Servicio, DataVerticalBasico Vertical) {
 		this.UsuarioCorreo 			= UsuarioCorreo;
 		this.UsuarioNombre 			= UsuarioNombre;
 		this.UsuarioApellido		= UsuarioApellido;
@@ -41,10 +42,19 @@ public class DataProveedor {
 		this.PorCobrar				= PorCobrar;
 		this.VehiculoMarca			= VehiculoMarca;
 		this.VehiculoModelo			= VehiculoModelo;
+		this.Vertical				= Vertical;
 	}
 	
 	
 	
+	public DataVerticalBasico getVertical() {
+		return Vertical;
+	}
+
+	public void setVertical(DataVerticalBasico vertical) {
+		Vertical = vertical;
+	}
+
 	public String getVehiculoMarca() {
 		return VehiculoMarca;
 	}

@@ -15,7 +15,7 @@ public interface ControladorProveedorRemote {
 
 	String PuntuarProveedor( int Puntaje, String Comentario, int InstanciaServicioId);
 
-	String RegistrarProveedor(DataProveedorBasico Proveedor);
+	String RegistrarProveedor(DataProveedorBasico Proveedor, String TipoVertical);
 
 	//boolean Login(DataLogin datos);
 	
@@ -52,4 +52,6 @@ public interface ControladorProveedorRemote {
 	String ActualizarCoordenadas(String correo, double latitud, double longitud, boolean enViaje, int instanciaServicioId);
 	
 	List<DataProveedor> ObtenerProveedores();
+	
+	String CancelarViaje(int InstanciaServicioId);
 }

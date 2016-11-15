@@ -12,12 +12,13 @@ public class DataUsuario {
 	private String UsuarioDireccion;	
 	private float UsuarioPromedioPuntaje;
 	private String UsuarioTelefono;
+	private DataVerticalBasico Vertical;
 	
 	public DataUsuario() {
 	}
 	
 	public DataUsuario(String usuarioCorreo, String usuarioNombre, String usuarioApellido, String usuarioCiudad,
-		String usuarioContraseña, String usuarioDireccion, float usuarioPromedioPuntaje, String usuarioTelefono) {
+		String usuarioContraseña, String usuarioDireccion, float usuarioPromedioPuntaje, String usuarioTelefono, DataVerticalBasico Vertical) {
 		super();
 		UsuarioCorreo = usuarioCorreo;
 		UsuarioNombre = usuarioNombre;
@@ -27,8 +28,18 @@ public class DataUsuario {
 		UsuarioDireccion = usuarioDireccion;
 		UsuarioPromedioPuntaje = usuarioPromedioPuntaje;
 		UsuarioTelefono = usuarioTelefono;
+		this.Vertical = Vertical;
+		
 	}
 	
+	public DataVerticalBasico getVertical() {
+		return Vertical;
+	}
+
+	public void setVertical(DataVerticalBasico vertical) {
+		Vertical = vertical;
+	}
+
 	public String getUsuarioCorreo() {
 		return UsuarioCorreo;
 	}
