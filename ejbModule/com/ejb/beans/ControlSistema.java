@@ -6,10 +6,16 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.KeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -87,7 +93,7 @@ public class ControlSistema implements ControlSistemaRemote, ControlSistemaLocal
     public boolean Login(DataLogin datos, String tipoUsuario){
     	
     	String correo = datos.getCorreo();
-    	String password = datos.getPassword();
+    	String password = HashPassword(datos.getPassword());
     	String deviceId = datos.getDeviceId();
     	
     	System.out.println("correo: " + correo);
@@ -258,6 +264,30 @@ public class ControlSistema implements ControlSistemaRemote, ControlSistemaLocal
     	
     }
 
-
+    public String HashPassword(String passwordToHash){
+         String generatedPassword = null;
+         try {
+             // Create MessageDigest instance for MD5
+             MessageDigest md = MessageDigest.getInstance("MD5");
+             //Add password bytes to digest
+             md.update(passwordToHash.getBytes());
+             //Get the hash's bytes 
+             byte[] bytes = md.digest();
+             //This bytes[] has bytes in decimal format;
+             //Convert it to hexadecimal format
+             StringBuilder sb = new StringBuilder();
+             for(int i=0; i< bytes.length ;i++)
+             {
+                 sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+             }
+             //Get complete hashed password in hex format
+             generatedPassword = sb.toString();
+         } 
+         catch (NoSuchAlgorithmException e) 
+         {
+             e.printStackTrace();
+         }
+         return generatedPassword;
+    }
 
 }

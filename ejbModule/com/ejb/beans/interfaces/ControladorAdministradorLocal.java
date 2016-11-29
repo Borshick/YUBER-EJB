@@ -9,6 +9,7 @@ import com.datatypes.DataAdministrador;
 import com.datatypes.DataAdministradorBasico;
 import com.datatypes.DataClienteBasico;
 import com.datatypes.DataClienteCantServiciosBasico;
+import com.datatypes.DataGananciaServicio;
 import com.datatypes.DataProveedorBasico;
 import com.datatypes.DataVertical;
 import com.datatypes.DataVerticalBasico;
@@ -19,7 +20,7 @@ public interface ControladorAdministradorLocal {
 
 	void Login(String AdministradorEmail, String Password);
 
-	List<DataClienteBasico> ObtenerClientesActivos();
+	List<DataClienteBasico> ObtenerClientesActivos(String vertical);
 
 	List<DataProveedorBasico> ObtenerProveedoresActivos();
 
@@ -31,7 +32,7 @@ public interface ControladorAdministradorLocal {
 
 	DataAdministrador ObtenerAdministrador( String AdministradorEmail);
 
-	float ObtenerGananciaMensual(int mes);
+	List<DataGananciaServicio> ObtenerGananciaMensual(int mes, String VerticalTipo);
 
 	List<DataProveedorBasico> TopProveedoresPorPuntajes( int Limit, String Vertical);
 

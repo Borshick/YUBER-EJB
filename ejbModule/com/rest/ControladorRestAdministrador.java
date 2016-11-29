@@ -42,10 +42,10 @@ public class ControladorRestAdministrador {
 	private ControlSistemaLocal sistema;
 
 	@GET
-	@Path("/ObtenerClientesActivos")
+	@Path("/ObtenerClientesActivos/{vertical}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response ObtenerClientesActivos(){
-		ResponseBuilder respuesta = Response.ok(controlador.ObtenerClientesActivos());
+	public Response ObtenerClientesActivos(@PathParam ("vertical") String vertical){
+		ResponseBuilder respuesta = Response.ok(controlador.ObtenerClientesActivos(vertical));
 		return respuesta.build();
 	}
 
@@ -92,11 +92,11 @@ public class ControladorRestAdministrador {
 	}
 
 	@GET
-	@Path("/ObtenerGananciaMensual/{mes}")
+	@Path("/ObtenerGananciaMensual/{vertical},{mes}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response ObtenerGananciaMensual(@PathParam ("mes") int mes){
-		ResponseBuilder respuesta = Response.ok(controlador.ObtenerGananciaMensual(mes));
+	public Response ObtenerGananciaMensual(@PathParam ("vertical") String VerticalTipo, @PathParam ("mes") int mes){
+		ResponseBuilder respuesta = Response.ok(controlador.ObtenerGananciaMensual(mes, VerticalTipo));
 		return respuesta.build();
 	}
 

@@ -15,11 +15,11 @@ import javax.persistence.*;
 @Entity
 @Inheritance(strategy=InheritanceType.SINGLE_TABLE)  
 @NamedQueries({
-	@NamedQuery(query = "SELECT p FROM Proveedor p WHERE p.Vertical = :Vertical ORDER BY p.UsuarioPromedioPuntaje DESC", name = "TopProveedoresPorPuntajes"),
+	@NamedQuery(query = "SELECT p FROM Proveedor p WHERE p.Vertical.VerticalTipo = :Vertical ORDER BY p.UsuarioPromedioPuntaje DESC", name = "TopProveedoresPorPuntajes"),
 	//@NamedQuery(query = "SELECT p , SUM(i.InstanciaServicioCosto) "
 	//		+ "FROM Proveedor p JOIN p.InstanciasServicio i "
 	//		+ "ORDER BY SUM(i.InstanciaServicioCosto) DESC", name = "TopProveedoresPorGanancia"),
-	@NamedQuery(query = "SELECT p FROM Proveedor p WHERE p.Vertical = :Vertical ORDER BY p.GananciaTotal DESC", name = "TopProveedoresPorGanancia"),	
+	@NamedQuery(query = "SELECT p FROM Proveedor p WHERE p.Vertical.VerticalTipo = :Vertical ORDER BY p.GananciaTotal DESC", name = "TopProveedoresPorGanancia"),	
 	@NamedQuery(query = "SELECT p FROM Proveedor p", name = "ObtenerListaProveedoresEnCiudad"),//Falta el where segun ciudad
 	
 	

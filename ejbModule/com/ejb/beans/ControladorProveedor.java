@@ -6,6 +6,7 @@ import com.datatypes.DataProveedor;
 import com.datatypes.DataProveedorBasico;
 import com.datatypes.DataReseña;
 import com.datatypes.DataUbicacion;
+import com.ejb.beans.interfaces.ControlSistemaLocal;
 import com.ejb.beans.interfaces.ControladorProveedorLocal;
 import com.ejb.beans.interfaces.ControladorProveedorRemote;
 import com.entities.Cliente;
@@ -61,6 +62,9 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 	
 	
 	private ControlErrores Error = new ControlErrores();
+
+	@EJB
+	private ControlSistemaLocal sistema;
 	
 	public ControladorProveedor() {
 	}
@@ -611,7 +615,7 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		user.setUsuarioNombre(Proveedor.getUsuarioNombre());
 		user.setUsuarioApellido(Proveedor.getUsuarioApellido());
 		user.setUsuarioCiudad(Proveedor.getUsuarioCiudad());
-		user.setUsuarioContraseña(Proveedor.getUsuarioContraseña());
+		user.setUsuarioContraseña(sistema.HashPassword(Proveedor.getUsuarioContraseña()));
 		user.setUsuarioCorreo(Proveedor.getUsuarioCorreo());
 		user.setUsuarioDireccion(Proveedor.getUsuarioDireccion());		
 		user.setUsuarioPromedioPuntaje(0);
@@ -696,7 +700,7 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 	    chargeParams.put("amount", aDebitar);
 	    chargeParams.put("currency", "usd");	    
 	    chargeParams.put("customer", prov.getTokenDePago());
-	    chargeParams.put("description", "Test Plaid charge");
+	    chargeParams.put("description", "Retiro de fondos de uber");
 	    
 	    try {
 			Charge charge = Charge.create(chargeParams);			
@@ -711,7 +715,7 @@ public class ControladorProveedor implements ControladorProveedorRemote, Control
 		prov.setPorCobrar(0);	
 		
 		System.out.println("--- Retirar fondos ---");
-		return Error.Ok;
+		return "Se han retirado "+ monto + "usd satisfactoriamente";
 	}
 	
 	

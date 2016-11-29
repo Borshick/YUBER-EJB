@@ -10,7 +10,7 @@ import com.datatypes.*;
 @NamedQueries({
 	@NamedQuery(query = "SELECT i FROM InstanciaServicio i WHERE i.Cliente.UsuarioCorreo = :ClienteCorreo AND i.Servicio.ServicioId = :ServicioId", name = "ObtenerHistorialCliente"),
 	@NamedQuery(query = "SELECT i FROM InstanciaServicio i WHERE i.Proveedor.UsuarioCorreo = :ProveedorCorreo", name = "ObtenerHistorialProveedor"),
-	@NamedQuery(query = "SELECT i FROM InstanciaServicio i WHERE i.InstanciaServicioFechaInicio >= :FechaInicio AND i.InstanciaServicioFechaInicio <= :FechaFin", name = "ObtenerGananciaMensual")
+	@NamedQuery(query = "SELECT i FROM InstanciaServicio i WHERE i.InstanciaServicioFechaInicio >= :FechaInicio AND i.InstanciaServicioFechaInicio <= :FechaFin AND i.Servicio.Borrado = 0  AND i.Servicio.ServicioId = :Servicio", name = "ObtenerGananciaMensual")
 })
 public class InstanciaServicio implements Serializable {
 	

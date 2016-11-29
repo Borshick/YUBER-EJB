@@ -5,17 +5,20 @@ import com.datatypes.DataAdministradorBasico;
 import com.datatypes.DataClienteBasico;
 import com.datatypes.DataClienteCantServicios;
 import com.datatypes.DataClienteCantServiciosBasico;
+import com.datatypes.DataGananciaServicio;
 import com.datatypes.DataProveedor;
 import com.datatypes.DataProveedorBasico;
 import com.datatypes.DataProveedorGanancia;
 import com.datatypes.DataVertical;
 import com.datatypes.DataVerticalBasico;
+import com.ejb.beans.interfaces.ControlSistemaLocal;
 import com.ejb.beans.interfaces.ControladorAdministradorLocal;
 import com.ejb.beans.interfaces.ControladorAdministradorRemote;
 import com.entities.Administrador;
 import com.entities.Cliente;
 import com.entities.InstanciaServicio;
 import com.entities.Proveedor;
+import com.entities.Servicio;
 import com.entities.Vertical;
 import com.utils.ControlErrores;
 
@@ -24,6 +27,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -39,6 +43,10 @@ public class ControladorAdministrador implements ControladorAdministradorRemote,
 
 	@PersistenceContext
 	private EntityManager em;
+	
+	@EJB
+	private ControlSistemaLocal sistema;
+	
 	private ControlErrores Error = new ControlErrores();
 	
 	public ControladorAdministrador() {
@@ -49,9 +57,10 @@ public class ControladorAdministrador implements ControladorAdministradorRemote,
 	}
 	
 	@Override
-	public List<DataClienteBasico> ObtenerClientesActivos(){
+	public List<DataClienteBasico> ObtenerClientesActivos(String vertical){
+		System.out.println("+++ ObtenerClientesActivos +++");
 		//Se considera clientes activos aquellos que tienen
-	/*	//instancia_servicio con menos de 30 dias 
+		//instancia_servicio con menos de 30 dias 
 		Date fechaHoy = new Date();
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(fechaHoy); 
@@ -61,11 +70,17 @@ public class ControladorAdministrador implements ControladorAdministradorRemote,
 		List<DataClienteBasico> ListaDataClientes = new ArrayList<DataClienteBasico>();
 		Query query = em.createNamedQuery("ObtenerClientesActivos", Cliente.class);
 		query.setParameter("Fecha", fecha);
+		query.setParameter("Vertical", vertical);
 		List<Cliente> ListaCliente = query.getResultList();
-		for(Cliente Cliente : ListaCliente){
+		System.out.println("Clientes activos:");
+		for(Cliente Cliente : ListaCliente){			
 			ListaDataClientes.add(Cliente.getDataClienteBasico());
-		}*/
-		return null;
+			System.out.println("Cliente: " + Cliente.getUsuarioNombre());
+		}
+		
+		
+		System.out.println("--- ObtenerClientesActivos ---");
+		return ListaDataClientes;
 	}
 	
 	@Override
@@ -91,7 +106,7 @@ public class ControladorAdministrador implements ControladorAdministradorRemote,
 	@Override
 	public String CrearAdministrador(String Correo, String Contrasena, String Nombre){
 		try{			
-			Administrador Admin = new Administrador(Correo, Contrasena, Nombre, null);
+			Administrador Admin = new Administrador(Correo, sistema.HashPassword(Contrasena), Nombre, null);
 			String Result = Persistir(Admin);
 			if(!Result.equals(Error.Ok)){
 				return Error.ErrorCompuesto(Error.A53, Correo);
@@ -182,25 +197,44 @@ public class ControladorAdministrador implements ControladorAdministradorRemote,
 	}	
 	
 	@Override
-	public float ObtenerGananciaMensual(int mes){		  
-		//obtengo el primer dia del mes
-		Date fechaInicio = new Date(2016, mes, 1);
-		//Calulo el ultimo dia del mes		
+	public List<DataGananciaServicio> ObtenerGananciaMensual(int mes, String VerticalTipo){
+		System.out.println("+++ Obtener Ganancia Mensual +++");
 		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(fechaInicio); 
-		calendar.add(Calendar.MONTH, + 1);  
-		calendar.add(Calendar.DATE, - 1);  
-		Date fechaFin = calendar.getTime();
-		//Hago la consulta		
-		Query query = em.createNamedQuery("ObtenerGananciaMensual", InstanciaServicio.class);
-		query.setParameter("FechaInicio", fechaInicio);
-		query.setParameter("FechaFin", fechaFin);		
-		List<InstanciaServicio> ListaInstanciaServicio = query.getResultList();
-		float ganancia = 0;
-		for(InstanciaServicio is : ListaInstanciaServicio){
-			ganancia += is.getInstanciaServicioCosto();
-		}		
-		return ganancia;
+		//calendar.add(Calendar.YEAR, 2016);
+		calendar.set(Calendar.DAY_OF_MONTH, 1);
+		calendar.set(Calendar.MONTH, mes-1);
+		Date fechaInicio = calendar.getTime();
+		calendar.add(Calendar.MONTH, + 1); 
+		Date fechaFin = calendar.getTime();		
+		System.out.println(fechaInicio);
+		System.out.println(fechaFin);
+		
+		Vertical vertical = em.find(Vertical.class, VerticalTipo);
+		List<DataGananciaServicio> ListaGanancias = new ArrayList<DataGananciaServicio>();
+		
+		for(Servicio s : vertical.getServicios())
+		{
+			if (s.getBorrado() == 0)
+			{
+				//Hago la consulta		
+				Query query = em.createNamedQuery("ObtenerGananciaMensual", InstanciaServicio.class);
+				query.setParameter("FechaInicio", fechaInicio);
+				query.setParameter("FechaFin", fechaFin);
+				query.setParameter("Servicio", s.getServicioId());
+				List<InstanciaServicio> ListaInstanciaServicio = query.getResultList();
+				float ganancia = 0;
+				System.out.println(ListaInstanciaServicio.size());
+				for(InstanciaServicio is : ListaInstanciaServicio){
+					ganancia += is.getInstanciaServicioCosto();
+				}	
+				System.out.println("Servicio>ganancia :" + s.getServicioNombre()+ " > " +ganancia);
+				DataGananciaServicio DataGanancia = new DataGananciaServicio(s.getServicioNombre(), ganancia);
+				ListaGanancias.add(DataGanancia);
+			}
+		}
+		
+		System.out.println("--- Obtener Ganancia Mensual ---");
+		return ListaGanancias;
 	}
 	
 	@Override

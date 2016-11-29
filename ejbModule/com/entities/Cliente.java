@@ -14,13 +14,12 @@ import javax.persistence.*;
 @Entity
 @Inheritance(strategy=InheritanceType.SINGLE_TABLE)
 @NamedQueries({
-	@NamedQuery(query = "SELECT DISTINCT c FROM Cliente c WHERE c.Vertical = :VerticalTipo ORDER BY c.UsuarioPromedioPuntaje DESC", name = "TopClientesPorPuntaje"),
-	@NamedQuery(query = "SELECT DISTINCT c FROM Cliente c JOIN c.InstanciasServicio i WHERE c.Vertical = :VerticalTipo ORDER BY COUNT(i.InstanciaServicioId) DESC", name = "TopClientesPorCantServicios"),
-	
-	//@NamedQuery(query = "SELECT c FROM Cliente c INNER JOIN InstanciaServicio i ON (c.UsuarioCorreo = i.Cliente.UsuarioCorreo) WHERE i.InstanciaServicioFechaFin >= :Fecha", name = "ObtenerClientesActivos")
+	// 
+	@NamedQuery(query = "SELECT DISTINCT c FROM Cliente c WHERE c.Vertical.VerticalTipo = :VerticalTipo ORDER BY c.UsuarioPromedioPuntaje DESC", name = "TopClientesPorPuntaje"),
+	@NamedQuery(query = "SELECT DISTINCT c FROM Cliente c JOIN c.InstanciasServicio i WHERE c.Vertical.VerticalTipo = :VerticalTipo GROUP BY i.InstanciaServicioId ORDER BY COUNT(i.InstanciaServicioId) DESC", name = "TopClientesPorCantServicios"),
+	@NamedQuery(query = "SELECT DISTINCT c FROM Cliente c JOIN c.InstanciasServicio i WHERE i.InstanciaServicioFechaInicio >= :Fecha AND c.Vertical.VerticalTipo = :Vertical", name = "ObtenerClientesActivos")
 })
 public class Cliente extends Usuario implements Serializable {
-	
 	@OneToMany(mappedBy="Cliente", cascade=CascadeType.PERSIST)
 	private List<InstanciaServicio> InstanciasServicio;	
 	private static final long serialVersionUID = 1L;

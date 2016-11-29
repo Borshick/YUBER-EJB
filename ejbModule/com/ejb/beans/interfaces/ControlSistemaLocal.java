@@ -14,4 +14,6 @@ public interface ControlSistemaLocal {
 	String ValidarSesion(String token);
 	
 	String EnviarPushNotification(String Titulo, String Texto, String JsonIN, String Dispositivo);
+	
+	String HashPassword(String passwordToHash);
 }

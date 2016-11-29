@@ -7,6 +7,7 @@ import com.datatypes.DataInstanciaServicioBasico;
 import com.datatypes.DataNotificacionNuevaSolicitud;
 import com.datatypes.DataReseña;
 import com.datatypes.DataUbicacion;
+import com.ejb.beans.interfaces.ControlSistemaLocal;
 import com.ejb.beans.interfaces.ControladorClienteLocal;
 import com.ejb.beans.interfaces.ControladorClienteRemote;
 import com.entities.Cliente;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -54,6 +56,9 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
 	private EntityManager em;
 	
 	private ControlErrores Error = new ControlErrores();
+	
+	@EJB
+	private ControlSistemaLocal sistema;
 
     public ControladorCliente() {
         // TODO Auto-generated constructor stub
@@ -221,13 +226,23 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
 		System.out.println("+++ ObtenerHistorial_Cliente +++");
 		System.out.println("ClienteCorreo: "+ ClienteCorreo);
 		
+		Cliente cliente;
+		try{
+			cliente = (Cliente)em.find(Cliente.class, ClienteCorreo);
+			if(cliente == null){
+				return null;
+			}
+		}catch(Exception e){
+			return null;
+		}
+		em.flush();
 		List<DataInstanciaServicio> ListaDataInstanciaServicio = new ArrayList<DataInstanciaServicio>();		
-		Query query = em.createNamedQuery("ObtenerHistorialCliente", InstanciaServicio.class).
-				setParameter("ClienteCorreo", ClienteCorreo).setParameter("ServicioId", ServicioId);
-		List<InstanciaServicio> ListaInstanciaServicio = query.getResultList();
+		List<InstanciaServicio> ListaInstanciaServicio = cliente.getInstanciasServicio();
+		System.out.println("Lista de instancias:");
 		for (InstanciaServicio InstanciaServicio : ListaInstanciaServicio){ 
 			DataInstanciaServicio DataInstanciaServicio = InstanciaServicio.getDataInstanciaServicio();
 			ListaDataInstanciaServicio.add(DataInstanciaServicio);
+			System.out.println("Instancia: "+DataInstanciaServicio.getInstanciaServicioId());
 		}
 		System.out.println("--- ObtenerHistorial_Cliente ---");
 		return ListaDataInstanciaServicio;
@@ -442,11 +457,13 @@ public class ControladorCliente implements ControladorClienteRemote, Controlador
 			if(vertical == null){
 				return Error.ErrorCompuesto(Error.S1 ,TipoVertical);
 			}	
+			System.out.println(Cliente.getUsuarioContraseña());
+			System.out.println(sistema.HashPassword(Cliente.getUsuarioContraseña()));
 			Cliente user = new Cliente();
 			user.setUsuarioNombre(Cliente.getUsuarioNombre());
 			user.setUsuarioApellido(Cliente.getUsuarioApellido());
 			user.setUsuarioCiudad(Cliente.getUsuarioCiudad());
-			user.setUsuarioContraseña(Cliente.getUsuarioContraseña());
+			user.setUsuarioContraseña(sistema.HashPassword(Cliente.getUsuarioContraseña()));
 			user.setUsuarioCorreo(Cliente.getUsuarioCorreo());
 			user.setUsuarioDireccion(Cliente.getUsuarioDireccion());		
 			user.setUsuarioPromedioPuntaje(0);

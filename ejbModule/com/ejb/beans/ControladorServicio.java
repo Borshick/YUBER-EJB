@@ -1,9 +1,12 @@
 package com.ejb.beans;
 
+import com.datatypes.DataInstanciaServicio;
+import com.datatypes.DataInstanciaServicioBasico;
 import com.datatypes.DataServicio;
 import com.datatypes.DataServicioBasico;
 import com.ejb.beans.interfaces.ControladorServicioLocal;
 import com.ejb.beans.interfaces.ControladorServicioRemote;
+import com.entities.InstanciaServicio;
 import com.entities.Servicio;
 import com.entities.Vertical;
 import com.utils.ControlErrores;
@@ -151,5 +154,32 @@ public class ControladorServicio implements ControladorServicioRemote, Controlad
 		}catch(Exception e){
 			return Error.ErrorCompuesto(Error.G1 , e.getMessage());
 		}
+	}
+	
+	public DataInstanciaServicioBasico ObtenerInstanciaServicio(int InstanciaServicioId){
+		System.out.println("+++ ObtenerInstanciaServicio +++");
+		System.out.println("InstanciaServicioId: " + InstanciaServicioId);	
+		DataInstanciaServicioBasico ds;
+		try{
+			ds = this.em.find(InstanciaServicio.class, InstanciaServicioId).getDataInstanciaServicioBasico();
+		}catch(Exception e){	
+			ds = new DataInstanciaServicioBasico();
+			ds.setEstado(Error.GetJsonValor(Error.S2));
+			System.out.println("Error: " + Error.S2);
+			System.out.println("--- ObtenerInstanciaServicio ---");
+			return ds;
+		}	
+		if (ds == null){
+			ds = new DataInstanciaServicioBasico();
+			ds.setEstado(Error.GetJsonValor(Error.S2));
+			System.out.println("Error: " + Error.S2);
+			System.out.println("--- ObtenerInstanciaServicio ---");
+			return ds;
+		}
+		ds.setEstado(Error.GetJsonValor(Error.Ok));
+		System.out.println("DataInstanciaServicioId =" + ds.getInstanciaServicioId());
+		System.out.println("DataInstanciaServicioCosto =" + ds.getInstanciaServicioCosto());
+		System.out.println("--- ObtenerInstanciaServicio ---");
+		return ds;		
 	}
 }

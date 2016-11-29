@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.ejb.Remote;
 
+import com.datatypes.DataInstanciaServicio;
+import com.datatypes.DataInstanciaServicioBasico;
 import com.datatypes.DataServicio;
 import com.datatypes.DataServicioBasico;
 
@@ -19,5 +21,7 @@ public interface ControladorServicioRemote {
 	String ModificarServicio(DataServicioBasico Servicio);
 
 	DataServicio ObtenerServicio(int ServicioId);
+	
+	DataInstanciaServicioBasico ObtenerInstanciaServicio(int InstanciaServicioId);
 
 }

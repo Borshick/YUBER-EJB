@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.ejb.Local;
 
+import com.datatypes.DataInstanciaServicio;
+import com.datatypes.DataInstanciaServicioBasico;
 import com.datatypes.DataServicio;
 import com.datatypes.DataServicioBasico;
 
@@ -20,4 +22,5 @@ public interface ControladorServicioLocal {
 
 	DataServicio ObtenerServicio(int ServicioId);
 
+	DataInstanciaServicioBasico ObtenerInstanciaServicio(int InstanciaServicioId);
 }

@@ -93,5 +93,12 @@ public class ControladorRestServicios {
 	public Response ObtenerServicio(@PathParam ("servicioId") int ServicioId){
 		return Response.ok(controlador.ObtenerServicio(ServicioId)).build(); 
 	}
+	
+	@GET
+	@Path("/ObtenerInstanciaServicio/{instanciaServicioId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response ObtenerInstanciaServicio(@PathParam ("instanciaServicioId") int instanciaServicioId){
+		return Response.ok(controlador.ObtenerInstanciaServicio(instanciaServicioId)).build(); 
+	}
 
 }
